@@ -1,0 +1,14 @@
+{
+	"name": "Tournament",
+	"version": "0.0.1",
+	"required": "4.1.0",
+	"author": "ebe1.kenobi",
+	"description": "Tournament",
+	"dll": "TFModFortRiseTournament.dll",
+	"dependencies": [
+		{
+			"name": "Custom Name",
+			"version": "0.0.1"
+		}
+	]
+}
