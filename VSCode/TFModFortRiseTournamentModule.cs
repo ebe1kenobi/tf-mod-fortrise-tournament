@@ -1,4 +1,7 @@
-﻿using System;
+﻿//quand on reient en arriere a partir de la map -> archer selection
+//quand on arrete un match avec pause -> quit : archer selection
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using FortRise;

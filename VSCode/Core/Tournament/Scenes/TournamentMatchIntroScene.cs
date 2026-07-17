@@ -118,23 +118,38 @@ namespace TFModFortRiseTournament.Tournament
 
         if (mapMode == TournamentMapMode.Manual || !towersAvailable)
         {
-          // Sélection manuelle de la map (écran habituel).
-          var mapScene = new MapScene(MainMenu.RollcallModes.Versus);
-          Engine.Instance.Scene = mapScene;
-          Logger.Info("MapScene created and set as current scene");
+          // Sélection manuelle de la map (écran habituel, chemin compatible avec les
+          // mods qui patchent MapScene.StartSession, comme WiderSetMod).
+          OpenMapScene();
         }
         else
         {
-          // Aléatoire ou map fixe : on lance directement le match sur la tour choisie.
-          LaunchMatchDirectly(mapMode);
+          // Aléatoire ou map fixe : lancement direct. Si ça échoue (ex: interaction
+          // avec un mod qui patche le chargement de niveau comme WiderSetMod), on
+          // retombe sur l'écran de map (chemin compatible) plutôt que sur le bracket.
+          try
+          {
+            LaunchMatchDirectly(mapMode);
+          }
+          catch (Exception exDirect)
+          {
+            Logger.Info($"Direct match launch failed, falling back to map selection: {exDirect}");
+            OpenMapScene();
+          }
         }
       }
       catch (Exception ex)
       {
-        Logger.Info($"Error launching tournament match: {ex.Message}");
-        Logger.Info($"Stack trace: {ex.StackTrace}");
+        Logger.Info($"Error launching tournament match: {ex}");
         ReturnToBracket();
       }
+    }
+
+    private void OpenMapScene()
+    {
+      var mapScene = new MapScene(MainMenu.RollcallModes.Versus);
+      Engine.Instance.Scene = mapScene;
+      Logger.Info("MapScene created and set as current scene");
     }
 
     /// <summary>
@@ -184,10 +199,23 @@ namespace TFModFortRiseTournament.Tournament
         if (playerIndex < 4 && playerName != "TBD")
         {
           TFGame.Players[playerIndex] = true;
+
+          // L'application du nom custom est optionnelle : elle peut planter selon les
+          // autres mods actifs (ex: WiderSetMod modifie le Rollcall et fait planter le
+          // SetPlayerName du mod CustomName). On ne doit surtout pas empêcher le match
+          // de se lancer pour ça -> try/catch, on continue même si le nom n'est pas posé.
           if (CustomNameImport.SetPlayerName != null)
           {
-            CustomNameImport.SetPlayerName(playerIndex, playerName);
+            try
+            {
+              CustomNameImport.SetPlayerName(playerIndex, playerName);
+            }
+            catch (Exception exName)
+            {
+              Logger.Info($"SetPlayerName failed for player {playerIndex} ({playerName}): {exName.Message}");
+            }
           }
+
           playerIndex++;
         }
       }

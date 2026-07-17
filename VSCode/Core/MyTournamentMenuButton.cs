@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using Monocle;
 using TowerFall;
 using TFModFortRiseTournament.Tournament;
 
@@ -48,6 +49,17 @@ namespace TFModFortRiseTournament
     private static void Begin_patch(On.TowerFall.MainMenu.orig_Begin orig, MainMenu self)
     {
       orig(self);
+
+      // Si un tournoi est ENCORE actif au moment où un MainMenu se crée, c'est un retour
+      // non désiré du flux versus : "back" depuis l'écran de map, ou "quit" du pause
+      // pendant un match. Nos sorties volontaires (abandon/fin du tournoi) mettent
+      // TournamentSession.Current à null AVANT, donc elles ne sont pas concernées.
+      // -> on renvoie vers le bracket du tournoi au lieu du menu.
+      if (TournamentSession.Current != null && TournamentSession.Current.IsActive)
+      {
+        Engine.Instance.Scene = new TournamentScene(new TournamentBracketScene());
+        return;
+      }
 
       if (!playReturnAnimation)
         return;
