@@ -16,7 +16,7 @@ namespace TFModFortRiseTournament.Tournament
     private float imageY;
 
     public TournamentModeButton(Vector2 position, Vector2 tweenFrom)
-      : base(position, tweenFrom, "TOURNOI", "2-16 ARCHERS")
+      : base(position, tweenFrom, "TOURNAMENT", "2-16 ARCHERS")
     {
     }
 

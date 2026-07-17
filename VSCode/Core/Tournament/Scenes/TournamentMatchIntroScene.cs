@@ -196,7 +196,7 @@ namespace TFModFortRiseTournament.Tournament
       int playerIndex = 0;
       foreach (var playerName in currentMatch.Players)
       {
-        if (playerIndex < 4 && playerName != "TBD")
+        if (playerIndex < 4 && playerName != "?")
         {
           TFGame.Players[playerIndex] = true;
 
@@ -312,7 +312,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Draw.TextCentered(
           TFGame.Font,
-          "START: PASSER",
+          "START: PASS",
           new Vector2(160f, 220f),
           Color.Gray * alpha * 0.7f
         );
@@ -331,7 +331,7 @@ namespace TFModFortRiseTournament.Tournament
     {
       if (currentMatch.Players == null || currentMatch.Players.Count == 0)
       {
-        Draw.TextCentered(TFGame.Font, "TBD", centerPosition, Color.Gray * alpha);
+        Draw.TextCentered(TFGame.Font, "?", centerPosition, Color.Gray * alpha);
         return;
       }
 
@@ -341,7 +341,7 @@ namespace TFModFortRiseTournament.Tournament
       for (int i = 0; i < currentMatch.Players.Count; i++)
       {
         string playerName = currentMatch.Players[i];
-        if (playerName == "TBD")
+        if (playerName == "?")
           continue;
 
         float offset = (1f - animationProgress) * 50f * (i % 2 == 0 ? -1f : 1f);

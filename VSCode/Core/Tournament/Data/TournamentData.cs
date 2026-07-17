@@ -144,7 +144,7 @@ namespace TFModFortRiseTournament.Tournament
           bool hasTBD = false;
           foreach (var player in match.Players)
           {
-            if (player == "TBD")
+            if (player == "?")
             {
               hasTBD = true;
               break;

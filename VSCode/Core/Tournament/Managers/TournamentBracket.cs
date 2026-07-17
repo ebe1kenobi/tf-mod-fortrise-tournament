@@ -82,7 +82,7 @@ namespace TFModFortRiseTournament.Tournament
         }
         else
         {
-          match.Players.Add("TBD");          // le roi (vainqueur du défi précédent)
+          match.Players.Add("?");          // le roi (vainqueur du défi précédent)
           match.Players.Add(players[i + 1]); // le challenger
         }
 
@@ -170,7 +170,7 @@ namespace TFModFortRiseTournament.Tournament
           }
 
           matches.Add(match);
-          nextEntrants.Add(new Entrant("TBD", match.MatchIndex));
+          nextEntrants.Add(new Entrant("?", match.MatchIndex));
         }
 
         entrants = nextEntrants;
@@ -382,7 +382,7 @@ namespace TFModFortRiseTournament.Tournament
         // Remplacer le premier "TBD" par le gagnant
         for (int i = 0; i < nextMatch.Players.Count; i++)
         {
-          if (nextMatch.Players[i] == "TBD")
+          if (nextMatch.Players[i] == "?")
           {
             nextMatch.Players[i] = winner;
             Logger.Info($"Winner advanced to Match {nextMatch.MatchIndex}");
@@ -413,7 +413,7 @@ namespace TFModFortRiseTournament.Tournament
           bool hasTBD = false;
           foreach (var player in match.Players)
           {
-            if (player == "TBD")
+            if (player == "?")
             {
               hasTBD = true;
               break;

@@ -145,7 +145,7 @@ namespace TFModFortRiseTournament.Tournament
       // Titre
       Draw.OutlineTextCentered(
         TFGame.Font, 
-        "TOURNOI FFA - BRACKET", 
+        "FFA TOURNAMENT - BRACKET", 
         new Vector2(160f, 10f), 
         Color.White, 
         1.5f
@@ -356,7 +356,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         string name = match.Players[i];
         Color c = (match.IsPlayed && name == match.Winner) ? Calc.HexToColor("FFD700")
-                : name == "TBD" ? Color.Gray
+                : name == "?" ? Color.Gray
                 : Color.White;
         string label = FitText(name, width - pad * 2f, scale);
         Draw.Text(
@@ -379,7 +379,7 @@ namespace TFModFortRiseTournament.Tournament
     {
       Draw.OutlineTextCentered(
         TFGame.Font,
-        "CLASSEMENT (VICTOIRES)",
+        "RANK (VICTORIES)",
         new Vector2(160f, 45f),
         Calc.HexToColor("FFEC5E"),
         1f
@@ -446,7 +446,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.OutlineTextCentered(
         TFGame.Font, 
-        "QUITTER LE TOURNOI?", 
+        "LEAVE THE TOURNAMENT?", 
         new Vector2(160f, 105f), 
         Color.Red, 
         1f
@@ -454,14 +454,14 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font, 
-        "A: CONFIRMER", 
+        "A: CONFIRM", 
         new Vector2(160f, 120f), 
         Color.White
       );
 
       Draw.TextCentered(
         TFGame.Font, 
-        "B: ANNULER", 
+        "B: BACK", 
         new Vector2(160f, 132f), 
         Color.Gray
       );
@@ -475,7 +475,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Draw.OutlineTextCentered(
           TFGame.Font, 
-          "START: RETOUR AU MENU", 
+          "START: BACK TO MENU", 
           new Vector2(160f, y), 
           Calc.HexToColor("5EFF5E"), 
           1f
@@ -488,7 +488,7 @@ namespace TFModFortRiseTournament.Tournament
         {
           Draw.OutlineTextCentered(
             TFGame.Font, 
-            "START: LANCER LE MATCH", 
+            "START : START THE MATCH", 
             new Vector2(160f, y), 
             Calc.HexToColor("5EFF5E"), 
             1f
@@ -498,7 +498,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font, 
-        "SELECT: QUITTER LE TOURNOI", 
+        "SELECT: LEAVE TOURNAMENT", 
         new Vector2(160f, y + 12f), 
         Color.Gray
       );

@@ -38,6 +38,7 @@ namespace TFModFortRiseTournament
     public override void Load()
     {
       MyTournamentMenuButton.Load();
+      MyVersusMatchResults.Load();
       typeof(CustomNameImport).ModInterop();
 
       // Tournament system
@@ -51,6 +52,7 @@ namespace TFModFortRiseTournament
     public override void Unload()
     {
       MyTournamentMenuButton.Unload();
+      MyVersusMatchResults.Unload();
       // Tournament system
       Tournament.TournamentSession.Unload();
       Logger.Info("Tournament system unloaded");

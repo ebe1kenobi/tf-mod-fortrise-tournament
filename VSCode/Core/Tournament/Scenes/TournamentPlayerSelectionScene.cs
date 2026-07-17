@@ -158,7 +158,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.OutlineTextCentered(
         TFGame.Font,
-        "TOURNOI FFA - SELECTION JOUEURS",
+        "FFA TOURNAMENT - PLAYERS SELECTION",
         new Vector2(160f, 20f),
         Color.White,
         1.5f
@@ -166,13 +166,13 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font,
-        "HAUT/BAS: NAVIGUER  A: AJOUTER  B: RETIRER",
+        "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE",
         new Vector2(160f, 35f),
         Color.Gray
       );
 
       Color counterColor = GetCounterColor();
-      string counterText = $"{selectedPlayers.Count}/{MaxPlayers} JOUEURS";
+      string counterText = $"{selectedPlayers.Count}/{MaxPlayers} PLAYERS";
       Draw.OutlineTextCentered(
         TFGame.Font,
         counterText,
@@ -193,7 +193,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.OutlineTextCentered(
         TFGame.Font,
-        "DISPONIBLES",
+        "AVAILABLE",
         new Vector2(80f, startY),
         Calc.HexToColor("5EFF5E"),
         1f
@@ -240,7 +240,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.OutlineTextCentered(
         TFGame.Font,
-        "SELECTIONNES",
+        "SELECTED",
         new Vector2(240f, startY),
         Calc.HexToColor("FFEC5E"),
         1f
@@ -250,7 +250,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Draw.TextCentered(
           TFGame.Font,
-          "(vide)",
+          "(EMPTY)",
           new Vector2(240f, startY + 30f),
           Color.Gray
         );
@@ -279,7 +279,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Draw.OutlineTextCentered(
           TFGame.Font,
-          "START: CONTINUER",
+          "START: CONTINUE",
           new Vector2(160f, y),
           Calc.HexToColor("5EFF5E"),
           1f
@@ -289,7 +289,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Draw.TextCentered(
           TFGame.Font,
-          $"SELECTIONNEZ {MinPlayers} A {MaxPlayers} JOUEURS",
+          $"SELECT {MinPlayers} A {MaxPlayers} PLAYERS",
           new Vector2(160f, y),
           Color.Gray
         );
@@ -297,7 +297,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font,
-        "SELECT: ANNULER",
+        "X: CANCEL",
         new Vector2(160f, y + 12f),
         Color.Gray
       );

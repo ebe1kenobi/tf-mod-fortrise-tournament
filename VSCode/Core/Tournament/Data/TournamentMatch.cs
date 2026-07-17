@@ -70,7 +70,7 @@ namespace TFModFortRiseTournament.Tournament
     public string GetPlayersDisplay()
     {
       if (Players == null || Players.Count == 0)
-        return "TBD";
+        return "?";
       
       return string.Join(" vs ", Players);
     }
@@ -84,16 +84,16 @@ namespace TFModFortRiseTournament.Tournament
         return RoundLabel;
 
       if (IsPoolMatch)
-        return "POULE";
+        return "POOL";
 
       switch (Round)
       {
         case 0:
-          return "FINALE";
+          return "FINAL";
         case 1:
-          return "DEMI-FINALE";
+          return "SEMI-FINALE";
         case 2:
-          return "QUART DE FINALE";
+          return "QUARTERE FINAL";
         default:
           return $"ROUND {Round + 1}";
       }

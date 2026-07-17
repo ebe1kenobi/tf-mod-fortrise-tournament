@@ -242,8 +242,8 @@ namespace TFModFortRiseTournament.Tournament
 
       // Titre
       Draw.OutlineTextCentered(
-        TFGame.Font, 
-        "TOURNOI - CONFIGURATION FFA", 
+        TFGame.Font,
+        "TOURNAMENT - FFA SETTINGS", 
         new Vector2(160f, 20f), 
         Color.White, 
         1.5f
@@ -251,7 +251,7 @@ namespace TFModFortRiseTournament.Tournament
 
       // Récapitulatif
       int totalMatches = TournamentBracket.CountTotalMatches(selectedPlayers.Count, selectedFormat, selectedType);
-      string summary = $"{selectedPlayers.Count} JOUEURS - {totalMatches} MATCHS";
+      string summary = $"{selectedPlayers.Count} PLAYERS - {totalMatches} MATCHS";
       Draw.TextCentered(
         TFGame.Font,
         summary,
@@ -274,7 +274,7 @@ namespace TFModFortRiseTournament.Tournament
       // Option 0: Type de tournoi
       RenderOption(
         0,
-        "MODE DE TOURNOI:",
+        "TOURNAMENT MODE:",
         GetTypeDisplay(),
         new Vector2(160f, startY)
       );
@@ -282,7 +282,7 @@ namespace TFModFortRiseTournament.Tournament
       // Option 1: Format
       RenderOption(
         1,
-        "FORMAT FFA:",
+        "FFA FORMAT:",
         GetFormatDisplay(),
         new Vector2(160f, startY + lineHeight)
       );
@@ -290,7 +290,7 @@ namespace TFModFortRiseTournament.Tournament
       // Option 2: Goal
       RenderOption(
         2,
-        "ROUNDS POUR GAGNER:",
+        "ROUNDS TO WIN:",
         selectedGoal.ToString(),
         new Vector2(160f, startY + lineHeight * 2)
       );
@@ -324,7 +324,7 @@ namespace TFModFortRiseTournament.Tournament
       if (selectedMapIndex == TournamentMapMode.Manual)
         return "MANUEL";
       if (selectedMapIndex == TournamentMapMode.Random)
-        return "ALEATOIRE";
+        return "RANDOM";
       return "MAP " + (selectedMapIndex + 1);
     }
 
@@ -350,13 +350,13 @@ namespace TFModFortRiseTournament.Tournament
       switch (selectedFormat)
       {
         case TournamentMatchFormat.Ffa2:
-          return "2 JOUEURS";
+          return "2 PLAYERS";
         case TournamentMatchFormat.Ffa3:
-          return "3 JOUEURS";
+          return "3 PLAYERS";
         case TournamentMatchFormat.Ffa4:
-          return "4 JOUEURS";
+          return "4 PLAYERS";
         default:
-          return "2 JOUEURS";
+          return "2 PLAYERS";
       }
     }
 
@@ -366,21 +366,21 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font, 
-        "HAUT/BAS: OPTION", 
+        "UP/DOWN: OPTION", 
         new Vector2(160f, y), 
         Color.Gray
       );
 
       Draw.TextCentered(
         TFGame.Font, 
-        "GAUCHE/DROITE: MODIFIER", 
+        "LEFT/RIGHT: MODIFY", 
         new Vector2(160f, y + 12f), 
         Color.Gray
       );
 
       Draw.OutlineTextCentered(
         TFGame.Font, 
-        "START: COMMENCER LE TOURNOI", 
+        "START: START TOURNAMENT", 
         new Vector2(160f, y + 30f), 
         Calc.HexToColor("5EFF5E"), 
         1f
@@ -388,7 +388,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font, 
-        "SELECT: RETOUR", 
+        "X: BACK", 
         new Vector2(160f, y + 42f), 
         Color.Gray
       );

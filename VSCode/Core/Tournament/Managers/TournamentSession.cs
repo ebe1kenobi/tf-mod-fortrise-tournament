@@ -256,7 +256,7 @@ namespace TFModFortRiseTournament.Tournament
       int playerIndex = 0;
       foreach (var playerName in match.Players)
       {
-        if (playerIndex < TFGame.Players.Length && playerName != "TBD")
+        if (playerIndex < TFGame.Players.Length && playerName != "?")
         {
           TFGame.Players[playerIndex] = true;
           playerIndex++;
@@ -344,7 +344,7 @@ namespace TFModFortRiseTournament.Tournament
           bool allTied = true;
           foreach (var pl in match.Players)
           {
-            if (pl == "TBD" || !wins.ContainsKey(pl) || wins[pl] != winnerWins)
+            if (pl == "?" || !wins.ContainsKey(pl) || wins[pl] != winnerWins)
             {
               allTied = false;
               break;
