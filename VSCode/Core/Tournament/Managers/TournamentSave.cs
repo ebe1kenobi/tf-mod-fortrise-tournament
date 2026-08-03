@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace TFModFortRiseTournament.Tournament
 {
@@ -9,7 +9,11 @@ namespace TFModFortRiseTournament.Tournament
   /// </summary>
   public static class TournamentSave
   {
-    private const string SavePath = @".\Mods\tf-mod-fortrise-poto\tournament_save.json";
+    // FortRise 4 ecrivait dans .\Mods\tf-mod-fortrise-poto\ (dossier d'un AUTRE mod,
+    // vraisemblablement un copier-coller). FortRise 5 vit hors du repertoire de
+    // TowerFall : on utilise l'espace de sauvegarde de CE mod.
+    private static string SavePath =>
+      Path.Combine(TFModFortRiseTournamentModule.SavePath, "tournament_save.json");
 
     /// <summary>
     /// Indique si une sauvegarde de tournoi en cours existe.
@@ -37,7 +41,12 @@ namespace TFModFortRiseTournament.Tournament
 
       try
       {
-        string json = JsonConvert.SerializeObject(data);
+        string json = JsonSerializer.Serialize(data);
+
+        string directory = Path.GetDirectoryName(SavePath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+          Directory.CreateDirectory(directory);
+
         File.WriteAllText(SavePath, json);
         Logger.Info("Tournament saved");
       }
@@ -58,7 +67,7 @@ namespace TFModFortRiseTournament.Tournament
           return null;
 
         string json = File.ReadAllText(SavePath);
-        var data = JsonConvert.DeserializeObject<TournamentData>(json);
+        var data = JsonSerializer.Deserialize<TournamentData>(json);
 
         if (data == null || data.IsComplete || data.Bracket == null || data.Bracket.Count == 0)
           return null;

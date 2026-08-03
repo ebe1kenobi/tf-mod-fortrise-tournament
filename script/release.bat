@@ -13,7 +13,7 @@ mkdir %REPO_RELEASE_PATH%
 mkdir %REPO_RELEASE_MOD_PATH%
 
 
-copy %REPO_PATH%VSCODE\meta.json %REPO_RELEASE_MOD_PATH%
+rem meta.json a rejoint ModFile/ : le xcopy ci-dessous l'embarque.
 copy %REPO_BUILD_PATH%%DLL_MOD_FILE_NAME% %REPO_RELEASE_MOD_PATH%
 copy %REPO_BUILD_PATH%%PDB_MOD_FILE_NAME% %REPO_RELEASE_MOD_PATH%
 xcopy /S /E /Y %REPO_PATH%ModFile %REPO_RELEASE_MOD_PATH%

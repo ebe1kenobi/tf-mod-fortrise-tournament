@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
+using FortRise;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
@@ -12,7 +14,7 @@ namespace TFModFortRiseTournament
   /// boutons VERSUS (FightButton) et CO-OP (CoOpButton), et le câble dans la
   /// navigation clavier/manette (Versus &lt;-&gt; Tournoi &lt;-&gt; Coop).
   /// </summary>
-  public static class MyTournamentMenuButton
+  public class MyTournamentMenuButton : IHookable
   {
     // Positions de la rangée de mode (on écarte un peu Versus/Coop pour insérer Tournoi).
     private static readonly Vector2 FightPos = new Vector2(75f, 140f);
@@ -26,16 +28,16 @@ namespace TFModFortRiseTournament
     // Quand on revient du tournoi, on veut rejouer l'animation d'entrée du menu.
     private static bool playReturnAnimation;
 
-    public static void Load()
+    public static void Load(IHarmony harmony)
     {
-      On.TowerFall.MainMenu.CreateMain += CreateMain_patch;
-      On.TowerFall.MainMenu.Begin += Begin_patch;
-    }
-
-    public static void Unload()
-    {
-      On.TowerFall.MainMenu.CreateMain -= CreateMain_patch;
-      On.TowerFall.MainMenu.Begin -= Begin_patch;
+      harmony.Patch(
+          AccessTools.DeclaredMethod(typeof(MainMenu), nameof(MainMenu.CreateMain)),
+          postfix: new HarmonyMethod(CreateMain_patch)
+      );
+      harmony.Patch(
+          AccessTools.DeclaredMethod(typeof(MainMenu), nameof(MainMenu.Begin)),
+          postfix: new HarmonyMethod(Begin_patch)
+      );
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ namespace TFModFortRiseTournament
       playReturnAnimation = true;
     }
 
-    private static void Begin_patch(On.TowerFall.MainMenu.orig_Begin orig, MainMenu self)
+    private static void Begin_patch(MainMenu __instance)
     {
-      orig(self);
+      MainMenu self = __instance;
 
       // Si un tournoi est ENCORE actif au moment où un MainMenu se crée, c'est un retour
       // non désiré du flux versus : "back" depuis l'écran de map, ou "quit" du pause
@@ -80,9 +82,9 @@ namespace TFModFortRiseTournament
       }
     }
 
-    private static void CreateMain_patch(On.TowerFall.MainMenu.orig_CreateMain orig, MainMenu self)
+    private static void CreateMain_patch(MainMenu __instance)
     {
-      orig(self);
+      MainMenu self = __instance;
 
       // Les boutons viennent d'être ajoutés en attente : on flush pour pouvoir les
       // retrouver et les recâbler.

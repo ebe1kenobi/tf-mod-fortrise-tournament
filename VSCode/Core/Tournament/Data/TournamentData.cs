@@ -27,7 +27,7 @@ namespace TFModFortRiseTournament.Tournament
     /// Configuration de base pour tous les matchs du tournoi (non sauvegardée : type
     /// TowerFall non sérialisable en JSON).
     /// </summary>
-    [Newtonsoft.Json.JsonIgnore]
+    [System.Text.Json.Serialization.JsonIgnore]
     public MatchSettings BaseMatchSettings { get; set; }
 
     /// <summary>

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace TFModFortRiseTournament.Tournament
 {
@@ -10,7 +10,10 @@ namespace TFModFortRiseTournament.Tournament
   /// </summary>
   public static class TournamentPlayerManager
   {
-    private static readonly string JsonPath = @"C:\Program Files (x86)\Steam\steamapps\common\TowerFall\tournament_players.json";
+    // FortRise 4 pointait en dur sur le repertoire d'installation de TowerFall.
+    // FortRise 5 est independant du jeu : on utilise l'espace de sauvegarde du mod.
+    private static string JsonPath =>
+      Path.Combine(TFModFortRiseTournamentModule.SavePath, "tournament_players.json");
 
     /// <summary>
     /// Structure pour la désérialisation du JSON
@@ -58,7 +61,7 @@ namespace TFModFortRiseTournament.Tournament
         }
 
         string jsonContent = File.ReadAllText(JsonPath);
-        var data = JsonConvert.DeserializeObject<PlayerListData>(jsonContent);
+        var data = JsonSerializer.Deserialize<PlayerListData>(jsonContent);
 
         if (data?.players == null || data.players.Count == 0)
         {
@@ -108,7 +111,10 @@ namespace TFModFortRiseTournament.Tournament
           }
         };
 
-        string jsonContent = JsonConvert.SerializeObject(defaultData, Formatting.Indented);
+        string jsonContent = JsonSerializer.Serialize(defaultData, new JsonSerializerOptions
+        {
+          WriteIndented = true
+        });
         
         // Créer le répertoire si nécessaire
         string directory = Path.GetDirectoryName(JsonPath);

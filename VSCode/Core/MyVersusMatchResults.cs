@@ -1,4 +1,6 @@
 using System;
+using FortRise;
+using HarmonyLib;
 using Monocle;
 using TowerFall;
 using TFModFortRiseTournament.Tournament;
@@ -11,31 +13,30 @@ namespace TFModFortRiseTournament
   /// propre écran de résultats (VersusMatchResults), on enregistre le résultat dans le
   /// bracket, puis on affiche l'écran de résultats du tournoi.
   /// </summary>
-  public static class MyVersusMatchResults
+  public class MyVersusMatchResults : IHookable
   {
-    public static void Load()
+    public static void Load(IHarmony harmony)
     {
-      On.TowerFall.Session.CreateResults += CreateResults_patch;
+      // CreateResults est privee : patch par nom. Prefix rendant false pour
+      // remplacer entierement l'ecran de resultats vanilla quand un tournoi est actif.
+      harmony.Patch(
+          AccessTools.DeclaredMethod(typeof(Session), "CreateResults"),
+          prefix: new HarmonyMethod(CreateResults_patch)
+      );
       Logger.Info("MyVersusMatchResults hooks initialized");
     }
 
-    public static void Unload()
+    private static bool CreateResults_patch(Session __instance)
     {
-      On.TowerFall.Session.CreateResults -= CreateResults_patch;
-    }
+      Session self = __instance;
 
-    private static void CreateResults_patch(
-      On.TowerFall.Session.orig_CreateResults orig,
-      Session self)
-    {
       bool tournamentActive = TournamentSession.Current != null && TournamentSession.Current.IsActive;
 
       // Pas de tournoi, ou fin de round sans gagnant (le match continue) :
       // comportement normal du jeu.
       if (!tournamentActive || self.GetWinner() == -1)
       {
-        orig(self);
-        return;
+        return true;
       }
 
       int winnerIndex = self.GetWinner();
@@ -49,6 +50,8 @@ namespace TFModFortRiseTournament
       // Basculer vers l'écran de résultats du tournoi (le changement de scène est
       // différé par Monocle : la frame courante du Level se termine proprement).
       Engine.Instance.Scene = new TournamentScene(new TournamentMatchResultsScene(winnerName));
+
+      return false; // l'ecran de resultats vanilla est remplace
     }
 
     private static string GetWinnerName(int winnerIndex, Session session)
@@ -57,18 +60,13 @@ namespace TFModFortRiseTournament
       {
         if (TFGame.Players[i] && session.GetScoreIndex(i) == winnerIndex)
         {
-          if (CustomNameImport.GetPlayerName != null)
+          // CustomNameImport.GetPlayerName gere lui-meme le repli ("P1".."P8") ;
+          // IsAvailable distingue un vrai nom custom d'un repli.
+          if (CustomNameImport.IsAvailable)
           {
-            try
-            {
-              string customName = CustomNameImport.GetPlayerName(i);
-              if (!string.IsNullOrEmpty(customName))
-                return customName;
-            }
-            catch (Exception ex)
-            {
-              Logger.Info($"Error getting custom name for player {i}: {ex.Message}");
-            }
+            string customName = CustomNameImport.GetPlayerName(i);
+            if (!string.IsNullOrEmpty(customName))
+              return customName;
           }
 
           return $"Player {i + 1}";
