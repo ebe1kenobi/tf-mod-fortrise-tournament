@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Monocle;
 using TowerFall;
 
@@ -53,12 +54,32 @@ namespace TFModFortRiseTournament.Tournament
     public override void Update()
     {
       base.Update();
+
+      // Tant que le clavier virtuel est ouvert, il capte tout : sans cela les
+      // memes touches piloteraient aussi cette liste en arriere-plan.
+      if (TournamentNameKeyboard.IsOpen)
+        return;
+
       MenuInput.Update();
+
+      // Y (RB au clavier via MenuAlt) : ajouter un joueur au fichier. Disponible
+      // meme quand la liste est vide, sinon un fichier absent ou trop court
+      // laisserait l'ecran sans aucune issue.
+      if (AddNamePressed())
+      {
+        OpenNameKeyboard();
+        return;
+      }
 
       if (availablePlayers.Count == 0)
       {
-        Logger.Info("No players available, closing scene");
-        TournamentScene.ExitToMainMenu();
+        // Plus de fermeture automatique : on laisse l'ecran ouvert pour permettre
+        // la saisie des premiers noms. B reste la sortie.
+        if (MenuInput.Back)
+        {
+          Logger.Info("No players available, leaving tournament");
+          TournamentScene.ExitToMainMenu();
+        }
         return;
       }
 
@@ -134,6 +155,58 @@ namespace TFModFortRiseTournament.Tournament
       }
     }
 
+    /// <summary>
+    /// Detection de la touche Y. PlayerInput n'expose pas Y (seulement Confirm,
+    /// Back, Alt, Alt2 et Start), on lit donc le bouton directement sur la manette.
+    /// Au clavier, c'est la touche Y elle-meme ; MenuAlt (Tab / RB) marche aussi,
+    /// pour rester coherent avec le reste des menus du jeu.
+    /// </summary>
+    private static bool AddNamePressed()
+    {
+      for (int i = 0; i < TFGame.PlayerInputs.Length; i++)
+      {
+        PlayerInput input = TFGame.PlayerInputs[i];
+        if (input == null || !input.Attached) continue;
+
+        var pad = input as XGamepadInput;
+        if (pad != null && pad.XGamepad != null && pad.XGamepad.Pressed(Buttons.Y))
+          return true;
+
+        if (input.MenuAlt)
+          return true;
+      }
+
+      return MInput.Keyboard != null && MInput.Keyboard.Pressed(Keys.Y);
+    }
+
+    private void OpenNameKeyboard()
+    {
+      var keyboard = new TournamentNameKeyboard(
+          availablePlayers,
+          OnNameValidated,
+          null);
+
+      Scene.Add(keyboard);
+    }
+
+    /// <summary>
+    /// Ecrit le nom dans tournament_players.json et l'ajoute a la liste affichee.
+    /// Rend false si l'enregistrement echoue, pour que le clavier le signale au
+    /// lieu de se fermer en laissant croire que c'est fait.
+    /// </summary>
+    private bool OnNameValidated(string name)
+    {
+      string added = TournamentPlayerManager.AddPlayerName(name);
+      if (added == null)
+        return false;
+
+      availablePlayers.Add(added);
+      selectedIndex = availablePlayers.Count - 1;
+      AdjustScroll();
+      Logger.Info($"Nouveau joueur ajoute au fichier : {added}");
+      return true;
+    }
+
     private void AdjustScroll()
     {
       if (selectedIndex < scrollOffset)
@@ -166,7 +239,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font,
-        "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE",
+        "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE  Y: NEW NAME",
         new Vector2(160f, 35f),
         Color.Gray
       );
@@ -198,6 +271,16 @@ namespace TFModFortRiseTournament.Tournament
         Calc.HexToColor("5EFF5E"),
         1f
       );
+
+      // Liste vide : on oriente vers la creation plutot que de laisser un blanc.
+      if (availablePlayers.Count == 0)
+      {
+        Draw.TextCentered(TFGame.Font, "NO PLAYERS",
+            new Vector2(80f, startY + 20f), Color.Gray);
+        Draw.TextCentered(TFGame.Font, "Y: ADD NAME",
+            new Vector2(80f, startY + 34f), Calc.HexToColor("FFEC5E"));
+        return;
+      }
 
       int endIndex = System.Math.Min(scrollOffset + MaxVisiblePlayers, availablePlayers.Count);
 

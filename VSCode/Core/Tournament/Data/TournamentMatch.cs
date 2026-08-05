@@ -72,7 +72,7 @@ namespace TFModFortRiseTournament.Tournament
       if (Players == null || Players.Count == 0)
         return "?";
       
-      return string.Join(" vs ", Players);
+      return string.Join(" VS ", Players);
     }
 
     /// <summary>

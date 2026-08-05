@@ -21,18 +21,23 @@ namespace TFModFortRiseTournament
         }
 
         /// <summary>
-        /// Charge les joueurs du tournoi. Retourne null (et joue un son d'erreur) s'il
-        /// n'y en a pas assez.
+        /// Charge les joueurs du tournoi.
+        ///
+        /// On n'interdit plus l'entrée quand la liste est trop courte : l'écran de
+        /// sélection permet désormais d'ajouter des joueurs au clavier virtuel (Y),
+        /// et le refuser ici enfermerait l'utilisateur — un fichier absent ou
+        /// incomplet ne laissait aucun moyen de le remplir depuis le jeu.
+        /// La vérification du nombre reste faite au moment de lancer le tournoi.
         /// </summary>
         internal static List<string> TryGetTournamentPlayers()
         {
-            var playerNames = TournamentPlayerManager.LoadPlayerNames();
+            var playerNames = TournamentPlayerManager.LoadPlayerNames() ?? new List<string>();
 
-            if (playerNames == null || playerNames.Count < TournamentPlayerManager.GetMinimumPlayerCount())
+            if (playerNames.Count < TournamentPlayerManager.GetMinimumPlayerCount())
             {
-                Logger.Info($"Not enough players in tournament_players.json (need at least {TournamentPlayerManager.GetMinimumPlayerCount()})");
-                Sounds.ui_invalid.Play(160f, 1f);
-                return null;
+                Logger.Info($"Only {playerNames.Count} player(s) in tournament_players.json "
+                    + $"(minimum {TournamentPlayerManager.GetMinimumPlayerCount()}) - "
+                    + "ouverture de l'ecran de selection pour en ajouter");
             }
 
             return playerNames;
@@ -44,6 +49,11 @@ namespace TFModFortRiseTournament
         /// </summary>
         internal static MonocleEntity CreateFirstTournamentPage()
         {
+            // Le mode de jeu vient du versus normal et peut etre celui d'un mod
+            // (Playtag...) : on repart du dernier survivant des l'entree dans le
+            // tournoi, pour que les ecrans de reglages montrent deja le bon mode.
+            TournamentMatchLauncher.ResetGameMode();
+
             if (TournamentSave.Exists())
             {
                 var saved = TournamentSave.Load();
@@ -60,14 +70,6 @@ namespace TFModFortRiseTournament
         /// </summary>
         internal static void OpenTournamentMode()
         {
-            // S'il n'y a pas de sauvegarde à reprendre, il faut assez de joueurs.
-            if (!TournamentSave.Exists())
-            {
-                var players = TryGetTournamentPlayers();
-                if (players == null)
-                    return;
-            }
-
             Sounds.ui_click.Play(160f, 1f);
             Engine.Instance.Scene = new TournamentScene(CreateFirstTournamentPage());
         }

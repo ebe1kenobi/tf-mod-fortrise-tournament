@@ -90,6 +90,59 @@ namespace TFModFortRiseTournament.Tournament
     }
 
     /// <summary>
+    /// Ajoute un nom au fichier et le rend disponible pour les tournois suivants.
+    /// Le nom est normalisé comme au chargement (trim + majuscules) pour éviter
+    /// les doublons qui ne diffèrent que par la casse ou une espace.
+    /// </summary>
+    /// <returns>Le nom retenu, ou null si vide ou déjà présent.</returns>
+    public static string AddPlayerName(string rawName)
+    {
+      if (string.IsNullOrWhiteSpace(rawName))
+        return null;
+
+      string name = rawName.Trim().ToUpper();
+
+      var names = LoadPlayerNames() ?? new List<string>();
+      if (names.Contains(name))
+      {
+        Logger.Info($"Player name already present: {name}");
+        return null;
+      }
+
+      names.Add(name);
+      if (!SavePlayerNames(names))
+        return null;
+
+      Logger.Info($"Player name added: {name}");
+      return name;
+    }
+
+    /// <summary>
+    /// Réécrit le fichier des joueurs.
+    /// </summary>
+    public static bool SavePlayerNames(List<string> names)
+    {
+      try
+      {
+        string directory = Path.GetDirectoryName(JsonPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+          Directory.CreateDirectory(directory);
+
+        string jsonContent = JsonSerializer.Serialize(
+            new PlayerListData { players = names },
+            new JsonSerializerOptions { WriteIndented = true });
+
+        File.WriteAllText(JsonPath, jsonContent);
+        return true;
+      }
+      catch (Exception ex)
+      {
+        Logger.Info($"Error saving player names: {ex.Message}");
+        return false;
+      }
+    }
+
+    /// <summary>
     /// Crée un fichier JSON par défaut avec des noms de joueurs
     /// </summary>
     public static void CreateDefaultFile()
@@ -100,14 +153,7 @@ namespace TFModFortRiseTournament.Tournament
         {
           players = new List<string>
           {
-            "DAVID",
-            "ERIC",
-            "LOUIS",
-            "ALEXANDRE",
-            "JULIEN",
-            "MEHDI",
-            "BENOIT",
-            "PLAYER8"
+
           }
         };
 

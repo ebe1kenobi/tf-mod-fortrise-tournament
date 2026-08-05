@@ -37,6 +37,13 @@ namespace TFModFortRiseTournament.Tournament
     public int MapMode { get; set; }
 
     /// <summary>
+    /// Archer choisi par chaque joueur, indexe par son nom. Rempli sur l'ecran
+    /// d'assignation des manettes et conserve d'un match a l'autre : au match
+    /// suivant le joueur retrouve son archer et n'a plus qu'a valider.
+    /// </summary>
+    public Dictionary<string, TournamentArcherChoice> ArcherChoices { get; set; }
+
+    /// <summary>
     /// Structure du bracket avec tous les matchs
     /// </summary>
     public List<TournamentMatch> Bracket { get; set; }

@@ -8,9 +8,7 @@
 		{
 			"name": "FortRise",
 			"version": "5.3.3"
-		}
-	],
-	"optionalDependencies": [
+		},
 		{
 			"name": "CustomName",
 			"version": "1.0.5"

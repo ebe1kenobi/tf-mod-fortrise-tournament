@@ -77,8 +77,8 @@ namespace TFModFortRiseTournament.Tournament
 
       if (displayTimer >= DisplayDuration)
       {
-        Logger.Info("Intro complete, proceeding to map selection");
-        ProceedToMapSelection();
+        Logger.Info("Intro complete, proceeding to controller setup");
+        ProceedToControllerSetup();
         return;
       }
 
@@ -86,15 +86,18 @@ namespace TFModFortRiseTournament.Tournament
       if (MenuInput.Start || MenuInput.Confirm)
       {
         Logger.Info("Intro skipped by player");
-        ProceedToMapSelection();
+        ProceedToControllerSetup();
         return;
       }
     }
 
-    private void ProceedToMapSelection()
+    /// <summary>
+    /// Enchaine sur l'ecran d'assignation des manettes, qui configure les joueurs
+    /// puis lance le match. La configuration elle-meme vit dans
+    /// TournamentMatchLauncher, partagee entre les deux ecrans.
+    /// </summary>
+    private void ProceedToControllerSetup()
     {
-      Logger.Info("Proceeding to map selection for tournament match");
-
       if (session == null || !session.IsActive || currentMatch == null)
       {
         Logger.Info("Invalid session, returning to bracket");
@@ -102,152 +105,8 @@ namespace TFModFortRiseTournament.Tournament
         return;
       }
 
-      try
-      {
-        ConfigurePlayersForMatch();
-        ApplyTournamentMatchSettings();
-
-        // IMPORTANT : on change de scène via Engine.Scene sans RemoveSelf().
-        // Monocle n'appelle PAS Removed() lors d'un changement de scène, donc on
-        // remet nous-mêmes à zéro les flags statiques.
-        Instance = null;
-        IsOpen = false;
-
-        int mapMode = session.Data.MapMode;
-        bool towersAvailable = GameData.VersusTowers != null && GameData.VersusTowers.Count > 0;
-
-        if (mapMode == TournamentMapMode.Manual || !towersAvailable)
-        {
-          // Sélection manuelle de la map (écran habituel, chemin compatible avec les
-          // mods qui patchent MapScene.StartSession, comme WiderSetMod).
-          OpenMapScene();
-        }
-        else
-        {
-          // Aléatoire ou map fixe : lancement direct. Si ça échoue (ex: interaction
-          // avec un mod qui patche le chargement de niveau comme WiderSetMod), on
-          // retombe sur l'écran de map (chemin compatible) plutôt que sur le bracket.
-          try
-          {
-            LaunchMatchDirectly(mapMode);
-          }
-          catch (Exception exDirect)
-          {
-            Logger.Info($"Direct match launch failed, falling back to map selection: {exDirect}");
-            OpenMapScene();
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-        Logger.Info($"Error launching tournament match: {ex}");
-        ReturnToBracket();
-      }
-    }
-
-    private void OpenMapScene()
-    {
-      var mapScene = new MapScene(MainMenu.RollcallModes.Versus);
-      Engine.Instance.Scene = mapScene;
-      Logger.Info("MapScene created and set as current scene");
-    }
-
-    /// <summary>
-    /// Lance le match sans passer par l'écran de sélection : choisit la tour
-    /// (aléatoire ou fixe), fixe une graine, et démarre la session versus.
-    /// </summary>
-    private void LaunchMatchDirectly(int mapMode)
-    {
-      var settings = MainMenu.VersusMatchSettings;
-
-      int towerIndex;
-      if (mapMode == TournamentMapMode.Random)
-        towerIndex = new Random().Next(GameData.VersusTowers.Count);
-      else
-        towerIndex = mapMode;
-
-      if (towerIndex < 0 || towerIndex >= GameData.VersusTowers.Count)
-        towerIndex = 0;
-
-      settings.LevelSystem = GameData.VersusTowers[towerIndex].GetLevelSystem();
-      settings.RandomVersusTower = false;
-      settings.RandomLevelSeed = new Random().Next(1000000000);
-
-      MainMenu.CurrentMatchSettings = settings;
-
-      Logger.Info($"Launching tournament match directly on tower {towerIndex}");
-      new Session(settings).StartGame();
-    }
-
-    private void ConfigurePlayersForMatch()
-    {
-      if (currentMatch == null)
-      {
-        Logger.Info("Error: No current match to configure");
-        return;
-      }
-
-      for (int i = 0; i < 4; i++)
-      {
-        TFGame.Players[i] = false;
-        TFGame.Characters[i] = i;
-      }
-
-      int playerIndex = 0;
-      foreach (var playerName in currentMatch.Players)
-      {
-        if (playerIndex < 4 && playerName != "?")
-        {
-          TFGame.Players[playerIndex] = true;
-
-          // L'application du nom custom est optionnelle : elle peut planter selon les
-          // autres mods actifs (ex: WiderSetMod modifie le Rollcall et fait planter le
-          // SetPlayerName du mod CustomName). On ne doit surtout pas empêcher le match
-          // de se lancer pour ça -> try/catch, on continue même si le nom n'est pas posé.
-          if (CustomNameImport.SetPlayerName != null)
-          {
-            try
-            {
-              CustomNameImport.SetPlayerName(playerIndex, playerName);
-            }
-            catch (Exception exName)
-            {
-              Logger.Info($"SetPlayerName failed for player {playerIndex} ({playerName}): {exName.Message}");
-            }
-          }
-
-          playerIndex++;
-        }
-      }
-
-      Logger.Info($"Configured FFA match with {playerIndex} players");
-    }
-
-    /// <summary>
-    /// Force le match du tournoi à utiliser exactement le nombre de rounds
-    /// choisi dans les settings (un seul match, GoalScore = RoundsToWin).
-    /// </summary>
-    private void ApplyTournamentMatchSettings()
-    {
-      if (session == null || session.Data == null)
-        return;
-
-      var settings = MainMenu.VersusMatchSettings;
-      if (settings == null)
-      {
-        Logger.Info("Error: VersusMatchSettings is null, cannot apply tournament goal");
-        return;
-      }
-
-      int roundsToWin = session.Data.RoundsToWin;
-      if (roundsToWin < 1)
-        roundsToWin = 1;
-
-      // MatchLength.Custom + CustomGoal => GoalScore renvoie exactement CustomGoal
-      settings.MatchLength = MatchSettings.MatchLengths.Custom;
-      MatchSettings.CustomGoal = roundsToWin;
-
-      Logger.Info($"Tournament match settings applied: GoalScore = {roundsToWin} (Custom)");
+      Scene.Add(new TournamentControllerSetupScene());
+      RemoveSelf();
     }
 
     private void ReturnToBracket()

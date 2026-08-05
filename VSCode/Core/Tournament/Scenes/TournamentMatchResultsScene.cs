@@ -269,22 +269,28 @@ namespace TFModFortRiseTournament.Tournament
     private void RenderMiniBracket(float alpha)
     {
       // Afficher un mini bracket simplifié montrant la progression
-      float startY = 115f;
-      float lineHeight = 12f;
+      float startY = 120f;
+      float lineHeight = 15f;
 
+      // Sans facteur d'echelle, volontairement : la surcharge de TextCentered qui
+      // en prend un passe l'origine (MeasureString / 2) telle quelle a DrawString,
+      // sans l'arrondir, contrairement a OutlineTextCentered qui fait un Floor.
+      // Quand la hauteur du texte est impaire, l'origine tombe sur un demi-pixel,
+      // et avec le SamplerState.PointClamp du jeu la premiere ligne de pixels est
+      // rognee : c'est ce qui coupait le haut de PROGRESSION. Une echelle non
+      // entiere (0.8) sur une police bitmap aggravait encore le probleme.
       Draw.TextCentered(
         TFGame.Font,
         "PROGRESSION:",
         new Vector2(160f, startY),
-        Color.White * alpha * 0.8f,
-        0.8f
+        Color.White * alpha * 0.8f
       );
 
       int completedCount = session.GetCompletedMatchCount();
       int totalCount = session.GetTotalMatchCount();
       float progressPercent = session.GetProgressPercentage();
 
-      string progressText = $"{completedCount}/{totalCount} MATCHS ({progressPercent:F0}%)";
+      string progressText = $"{completedCount}/{totalCount} MATCHS";
       Draw.TextCentered(
         TFGame.Font,
         progressText,
