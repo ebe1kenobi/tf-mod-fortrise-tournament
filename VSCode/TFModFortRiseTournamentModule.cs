@@ -104,7 +104,7 @@ namespace TFModFortRiseTournament
       }
       Instance = this;
 
-      TFModFortRiseTournament.Logger.Init(SavePath);
+      TFModFortRiseTournament.Logger.Init(Meta.Name);
 
       RegisterTextures(content, context);
 
