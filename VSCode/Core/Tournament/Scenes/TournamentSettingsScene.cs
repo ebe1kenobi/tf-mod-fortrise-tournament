@@ -15,8 +15,12 @@ namespace TFModFortRiseTournament.Tournament
     private TournamentMatchFormat selectedFormat;
     private int selectedGoal; // Nombre de rounds pour gagner un match
     private int selectedMapIndex; // -2 manuel, -1 aléatoire, >=0 tour fixe
-    private int selectedOption; // 0=Type, 1=Format, 2=Goal, 3=Map
-    private const int TotalOptions = 4;
+    private int selectedGameMode; // index dans TournamentGameModes.GetNames()
+    private List<string> gameModeNames;
+    private int selectedOption; // 0=Type, 1=Format, 2=Goal, 3=Map, 4=Mode, 5=Variants
+    private const int OptionGameMode = 4;
+    private const int OptionVariants = 5;
+    private const int TotalOptions = 6;
 
     public static bool IsOpen { get; private set; }
     public static TournamentSettingsScene Instance { get; private set; }
@@ -98,6 +102,15 @@ namespace TFModFortRiseTournament.Tournament
         return;
       }
 
+      // A sur la ligne VARIANTS ouvre l'ecran dedie plutot que de valider.
+      if (MenuInput.Confirm && selectedOption == OptionVariants)
+      {
+        Sounds.ui_click.Play(160f, 1f);
+        Scene.Add(new TournamentVariantsScene(this));
+        RemoveSelf();
+        return;
+      }
+
       // Confirmer et générer le bracket
       if (MenuInput.Start || MenuInput.Confirm)
       {
@@ -131,7 +144,57 @@ namespace TFModFortRiseTournament.Tournament
         case 3: // Map
           AdjustMap(direction);
           break;
+        case OptionGameMode:
+          AdjustGameMode(direction);
+          break;
+        // OptionVariants : la ligne s'ouvre avec A, gauche/droite n'y font rien.
       }
+    }
+
+    /// <summary>
+    /// Mode de jeu du tournoi. La liste reprend celle du bouton de mode versus :
+    /// les trois modes du jeu puis ceux enregistres par les mods.
+    /// </summary>
+    private void AdjustGameMode(int direction)
+    {
+      EnsureGameModes();
+      if (gameModeNames.Count == 0)
+        return;
+
+      selectedGameMode = (selectedGameMode + direction) % gameModeNames.Count;
+      if (selectedGameMode < 0)
+        selectedGameMode += gameModeNames.Count;
+
+      // Applique tout de suite : l'ecran des variantes doit refleter le mode, et
+      // certains modes masquent des variantes.
+      TournamentGameModes.Apply(gameModeNames[selectedGameMode]);
+    }
+
+    private void EnsureGameModes()
+    {
+      if (gameModeNames != null)
+        return;
+
+      gameModeNames = TournamentGameModes.GetNames();
+
+      // Position de depart : le mode deja actif, sinon le premier de la liste.
+      selectedGameMode = 0;
+      var settings = MainMenu.VersusMatchSettings;
+      if (settings == null)
+        return;
+
+      string current = settings.IsCustom && !string.IsNullOrEmpty(settings.CustomVersusModeName)
+          ? settings.CustomVersusModeName
+          : settings.Mode.ToString();
+
+      int index = gameModeNames.IndexOf(current);
+      if (index >= 0)
+        selectedGameMode = index;
+    }
+
+    /// <summary>Rappelee par l'ecran des variantes quand il se referme.</summary>
+    public void OnVariantsClosed()
+    {
     }
 
     private void AdjustMap(int direction)
@@ -216,7 +279,13 @@ namespace TFModFortRiseTournament.Tournament
         // Nombre réel de matchs du bracket (tient compte des byes / formats FFA 3-4).
         TotalMatches = bracket.Count,
         RoundsToWin = selectedGoal,
-        MapMode = selectedMapIndex
+        MapMode = selectedMapIndex,
+        // Figes ici : reappliques avant chaque match, pour qu'un versus joue
+        // entre-temps ne change pas les regles du tournoi.
+        GameMode = gameModeNames != null && gameModeNames.Count > 0
+            ? gameModeNames[selectedGameMode]
+            : TournamentGameModes.Default,
+        ActiveVariants = TournamentVariants.GetActiveIds()
       };
 
       Logger.Info($"Tournament Type: {selectedType}, Players per match: {TournamentBracket.GetPlayersPerMatch(selectedFormat)}, Goal: {selectedGoal}");
@@ -232,8 +301,8 @@ namespace TFModFortRiseTournament.Tournament
 
     private List<string> GetAllAvailablePlayers()
     {
-      // Recharger la liste complète des joueurs depuis le JSON
-      return TournamentPlayerManager.LoadPlayerNames();
+      // Recharger la liste complète des joueurs depuis la source retenue
+      return TournamentRoster.Load();
     }
 
     public override void Render()
@@ -268,8 +337,8 @@ namespace TFModFortRiseTournament.Tournament
 
     private void RenderOptions()
     {
-      float startY = 60f;
-      float lineHeight = 26f;
+      float startY = 56f;
+      float lineHeight = 21f;
 
       // Option 0: Type de tournoi
       RenderOption(
@@ -301,6 +370,25 @@ namespace TFModFortRiseTournament.Tournament
         "MAP:",
         GetMapDisplay(),
         new Vector2(160f, startY + lineHeight * 3)
+      );
+
+      // Option 4: Mode de jeu
+      EnsureGameModes();
+      RenderOption(
+        OptionGameMode,
+        "GAME MODE:",
+        gameModeNames.Count > 0
+            ? TournamentGameModes.GetDisplay(gameModeNames[selectedGameMode])
+            : "?",
+        new Vector2(160f, startY + lineHeight * 4)
+      );
+
+      // Option 5: Variantes (ouverte avec A)
+      RenderOption(
+        OptionVariants,
+        "VARIANTS:",
+        TournamentVariants.CountActive() + " ACTIVE  (A)",
+        new Vector2(160f, startY + lineHeight * 5)
       );
     }
 
@@ -373,7 +461,7 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font, 
-        "LEFT/RIGHT: MODIFY", 
+        "LEFT/RIGHT: MODIFY   A: VARIANTS", 
         new Vector2(160f, y + 12f), 
         Color.Gray
       );

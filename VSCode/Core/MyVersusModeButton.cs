@@ -21,7 +21,8 @@ namespace TFModFortRiseTournament
         }
 
         /// <summary>
-        /// Charge les joueurs du tournoi.
+        /// Charge les joueurs du tournoi depuis la source retenue (fichier JSON ou
+        /// profils du mod Profiles).
         ///
         /// On n'interdit plus l'entrée quand la liste est trop courte : l'écran de
         /// sélection permet désormais d'ajouter des joueurs au clavier virtuel (Y),
@@ -31,11 +32,11 @@ namespace TFModFortRiseTournament
         /// </summary>
         internal static List<string> TryGetTournamentPlayers()
         {
-            var playerNames = TournamentPlayerManager.LoadPlayerNames() ?? new List<string>();
+            var playerNames = TournamentRoster.Load();
 
             if (playerNames.Count < TournamentPlayerManager.GetMinimumPlayerCount())
             {
-                Logger.Info($"Only {playerNames.Count} player(s) in tournament_players.json "
+                Logger.Info($"Only {playerNames.Count} player(s) from {TournamentRoster.EffectiveSource} "
                     + $"(minimum {TournamentPlayerManager.GetMinimumPlayerCount()}) - "
                     + "ouverture de l'ecran de selection pour en ajouter");
             }
@@ -61,7 +62,12 @@ namespace TFModFortRiseTournament
                     return new TournamentResumeScene(saved);
             }
 
-            var roster = TournamentPlayerManager.LoadPlayerNames();
+            // Nouveau tournoi : on part des regles de tournoi du jeu, le point de
+            // depart attendu pour une competition. Place apres la reprise de
+            // sauvegarde, qui doit conserver les variantes de son propre tournoi.
+            TournamentVariants.ApplyTournamentRules();
+
+            var roster = TournamentRoster.Load();
             return new TournamentPlayerSelectionScene(roster);
         }
 

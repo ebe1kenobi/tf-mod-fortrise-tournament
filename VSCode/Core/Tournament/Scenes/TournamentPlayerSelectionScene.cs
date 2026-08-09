@@ -11,7 +11,7 @@ namespace TFModFortRiseTournament.Tournament
   /// </summary>
   public class TournamentPlayerSelectionScene : Entity
   {
-    private readonly List<string> availablePlayers;
+    private List<string> availablePlayers;
     private readonly List<string> selectedPlayers;
     private int selectedIndex;
     private int scrollOffset;
@@ -62,10 +62,20 @@ namespace TFModFortRiseTournament.Tournament
 
       MenuInput.Update();
 
+      // Gauche/droite : changer de source. Place avant tout le reste, y compris
+      // avant le cas de la liste vide - c'est justement quand une source ne donne
+      // rien qu'il faut pouvoir passer a l'autre.
+      if (TournamentRoster.CanChooseSource && (MenuInput.Left || MenuInput.Right))
+      {
+        SwitchSource();
+        return;
+      }
+
       // Y (RB au clavier via MenuAlt) : ajouter un joueur au fichier. Disponible
       // meme quand la liste est vide, sinon un fichier absent ou trop court
-      // laisserait l'ecran sans aucune issue.
-      if (AddNamePressed())
+      // laisserait l'ecran sans aucune issue. Sans objet sur la source Profiles,
+      // ou les noms viennent de profils crees dans leur propre menu.
+      if (TournamentRoster.CanAddName && AddNamePressed())
       {
         OpenNameKeyboard();
         return;
@@ -179,6 +189,25 @@ namespace TFModFortRiseTournament.Tournament
       return MInput.Keyboard != null && MInput.Keyboard.Pressed(Keys.Y);
     }
 
+    /// <summary>
+    /// Bascule entre le fichier de noms et les profils, et recharge la liste.
+    ///
+    /// Les joueurs deja retenus sont conserves : un tournoi se compose de noms, d'ou
+    /// qu'ils viennent, et les perdre sur une touche pressee par curiosite serait la
+    /// pire des reponses. Rien n'empeche donc de composer une grille en puisant dans
+    /// les deux sources.
+    /// </summary>
+    private void SwitchSource()
+    {
+      TournamentRoster.ToggleSource();
+      availablePlayers = TournamentRoster.Load();
+
+      selectedIndex = 0;
+      scrollOffset = 0;
+      Sounds.ui_move1.Play(160f, 1f);
+      Logger.Info($"Source: {TournamentRoster.EffectiveSource} ({availablePlayers.Count} noms)");
+    }
+
     private void OpenNameKeyboard()
     {
       var keyboard = new TournamentNameKeyboard(
@@ -239,7 +268,9 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font,
-        "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE  Y: NEW NAME",
+        TournamentRoster.CanAddName
+            ? "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE  Y: NEW NAME"
+            : "UP/DOWN: NAVIGATE  A: ADD  B: REMOVE",
         new Vector2(160f, 35f),
         Color.Gray
       );
@@ -264,20 +295,26 @@ namespace TFModFortRiseTournament.Tournament
       float startY = 70f;
       float lineHeight = 12f;
 
+      // La colonne porte le nom de sa source plutot qu'un "AVAILABLE" generique :
+      // c'est le seul endroit ou l'on voit d'ou sortent ces noms, et le seul ou
+      // l'on puisse en changer.
       Draw.OutlineTextCentered(
         TFGame.Font,
-        "AVAILABLE",
+        TournamentRoster.CanChooseSource
+            ? "< " + TournamentRoster.Label + " >"
+            : TournamentRoster.Label,
         new Vector2(80f, startY),
         Calc.HexToColor("5EFF5E"),
         1f
       );
 
-      // Liste vide : on oriente vers la creation plutot que de laisser un blanc.
+      // Liste vide : on oriente vers la creation plutot que de laisser un blanc. La
+      // marche a suivre depend de la source, un profil ne se cree pas ici.
       if (availablePlayers.Count == 0)
       {
         Draw.TextCentered(TFGame.Font, "NO PLAYERS",
             new Vector2(80f, startY + 20f), Color.Gray);
-        Draw.TextCentered(TFGame.Font, "Y: ADD NAME",
+        Draw.TextCentered(TFGame.Font, TournamentText.Safe(TournamentRoster.EmptyHint),
             new Vector2(80f, startY + 34f), Calc.HexToColor("FFEC5E"));
         return;
       }
@@ -380,7 +417,9 @@ namespace TFModFortRiseTournament.Tournament
 
       Draw.TextCentered(
         TFGame.Font,
-        "X: CANCEL",
+        TournamentRoster.CanChooseSource
+            ? "X: CANCEL   LEFT/RIGHT: SOURCE"
+            : "X: CANCEL",
         new Vector2(160f, y + 12f),
         Color.Gray
       );

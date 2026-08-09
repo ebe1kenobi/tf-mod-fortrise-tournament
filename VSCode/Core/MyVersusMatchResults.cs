@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FortRise;
 using HarmonyLib;
 using Monocle;
@@ -9,9 +9,9 @@ namespace TFModFortRiseTournament
 {
   /// <summary>
   /// Intercepte la fin de match versus. Quand un tournoi est actif ET que le match est
-  /// terminé (il y a un gagnant), on court-circuite AVANT que le jeu ne construise son
-  /// propre écran de résultats (VersusMatchResults), on enregistre le résultat dans le
-  /// bracket, puis on affiche l'écran de résultats du tournoi.
+  /// terminÃ© (il y a un gagnant), on court-circuite AVANT que le jeu ne construise son
+  /// propre Ã©cran de rÃ©sultats (VersusMatchResults), on enregistre le rÃ©sultat dans le
+  /// bracket, puis on affiche l'Ã©cran de rÃ©sultats du tournoi.
   /// </summary>
   public class MyVersusMatchResults : IHookable
   {
@@ -44,11 +44,11 @@ namespace TFModFortRiseTournament
 
       Logger.Info($"Tournament match finished. Winner: Player {winnerIndex} ({winnerName})");
 
-      // Enregistrer le résultat (fait avancer le bracket).
+      // Enregistrer le rÃ©sultat (fait avancer le bracket).
       TournamentSession.Current.RecordMatchResult(winnerName);
 
-      // Basculer vers l'écran de résultats du tournoi (le changement de scène est
-      // différé par Monocle : la frame courante du Level se termine proprement).
+      // Basculer vers l'Ã©cran de rÃ©sultats du tournoi (le changement de scÃ¨ne est
+      // diffÃ©rÃ© par Monocle : la frame courante du Level se termine proprement).
       Engine.Instance.Scene = new TournamentScene(new TournamentMatchResultsScene(winnerName));
 
       return false; // l'ecran de resultats vanilla est remplace
@@ -60,11 +60,11 @@ namespace TFModFortRiseTournament
       {
         if (TFGame.Players[i] && session.GetScoreIndex(i) == winnerIndex)
         {
-          // CustomNameImport.GetPlayerName gere lui-meme le repli ("P1".."P8") ;
+          // ProfilesImport.GetPlayerName gere lui-meme le repli ("P1".."P8") ;
           // IsAvailable distingue un vrai nom custom d'un repli.
-          if (CustomNameImport.IsAvailable)
+          if (ProfilesImport.IsAvailable)
           {
-            string customName = CustomNameImport.GetPlayerName(i);
+            string customName = ProfilesImport.GetPlayerName(i);
             if (!string.IsNullOrEmpty(customName))
               return customName;
           }

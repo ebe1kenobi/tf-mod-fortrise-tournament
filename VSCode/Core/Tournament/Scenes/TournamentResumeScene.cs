@@ -58,7 +58,7 @@ namespace TFModFortRiseTournament.Tournament
       {
         Sounds.ui_click.Play(160f, 1f);
         TournamentSave.Delete();
-        var roster = TournamentPlayerManager.LoadPlayerNames();
+        var roster = TournamentRoster.Load();
         Scene.Add(new TournamentPlayerSelectionScene(roster));
         RemoveSelf();
         return;

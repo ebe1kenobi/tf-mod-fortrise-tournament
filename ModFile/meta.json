@@ -1,6 +1,6 @@
-{
+﻿{
 	"name": "Tournament",
-	"version": "1.0.0",
+	"version": "1.4.0",
 	"author": "ebe1.kenobi",
 	"description": "Tournament",
 	"dll": "TFModFortRiseTournament.dll",
@@ -8,10 +8,12 @@
 		{
 			"name": "FortRise",
 			"version": "5.3.3"
-		},
+		}
+	],
+	"optionalDependencies": [
 		{
-			"name": "CustomName",
-			"version": "1.0.5"
+			"name": "Ebe1.Profiles",
+			"version": "1.0.0"
 		}
 	]
 }

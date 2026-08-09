@@ -44,6 +44,21 @@ namespace TFModFortRiseTournament.Tournament
     public Dictionary<string, TournamentArcherChoice> ArcherChoices { get; set; }
 
     /// <summary>
+    /// Mode de jeu du tournoi ("LastManStanding", "Respawn", "PlayTag"...), choisi
+    /// sur l'ecran de configuration. Conserve ici et reapplique avant chaque match :
+    /// un versus joue entre deux matchs dans un autre mode ne doit pas contaminer
+    /// le tournoi en cours.
+    /// </summary>
+    public string GameMode { get; set; }
+
+    /// <summary>
+    /// Variantes actives du tournoi, par identifiant (voir TournamentVariants).
+    /// Memes raisons que GameMode : elles sont figees ici et reappliquees avant
+    /// chaque match, les autres etant desactivees.
+    /// </summary>
+    public List<string> ActiveVariants { get; set; }
+
+    /// <summary>
     /// Structure du bracket avec tous les matchs
     /// </summary>
     public List<TournamentMatch> Bracket { get; set; }

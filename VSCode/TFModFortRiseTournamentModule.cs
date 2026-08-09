@@ -1,4 +1,4 @@
-//todo ajout tournament variant, desactivate variant orb ...
+﻿//todo ajout tournament variant, desactivate variant orb ...
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -100,7 +100,7 @@ namespace TFModFortRiseTournament
     {
       if (!Debugger.IsAttached)
       {
-        //Debugger.Launch(); // Proposera d’attacher Visual Studio
+        //Debugger.Launch(); // Proposera dâ€™attacher Visual Studio
       }
       Instance = this;
 
@@ -108,11 +108,25 @@ namespace TFModFortRiseTournament
 
       RegisterTextures(content, context);
 
-      // CustomName n'exporte plus via MonoMod.ModInterop en FortRise 5 : il publie
-      // une interface via GetApi(). Dependance optionnelle, d'ou le null tolere.
-      CustomNameImport.Api = context.Interop.GetApi<ICustomNameModApi>("CustomName");
-      if (CustomNameImport.Api == null)
-        TFModFortRiseTournament.Logger.Info("[CustomName] mod absent : repli sur les noms P1..P8");
+      // Profiles est une dependance optionnelle : le tournoi tourne sans lui, sur son
+      // fichier de noms. Present, il fournit les noms de joueurs affiches en jeu, et
+      // sa liste de profils devient une source de roster au choix.
+      //
+      // L'interop de FortRise construit son proxy sur la forme des membres : il suffit
+      // que IProfilesModApi decrive ce que Profiles expose.
+      ProfilesImport.Api = context.Interop.GetApi<IProfilesModApi>("Ebe1.Profiles");
+      if (ProfilesImport.Api == null)
+        TFModFortRiseTournament.Logger.Info("[Profiles] mod absent : repli sur les noms P1..P8");
+
+      // Le roster est demande a part, avec une version minimale : Profiles ne le
+      // publie que depuis la 1.16, et reclamer un membre absent ferait echouer le
+      // proxy - donc perdre aussi les noms de joueurs, qui eux marchent depuis
+      // toujours.
+      ProfilesImport.Roster = context.Interop.GetApi<IProfilesRosterApi>(
+          "Ebe1.Profiles", new SemanticVersion(1, 16, 0));
+      if (ProfilesImport.Api != null && ProfilesImport.Roster == null)
+        TFModFortRiseTournament.Logger.Info(
+            "[Profiles] version anterieure a 1.16 : roster limite au fichier JSON");
 
       foreach (var hookable in Hookables)
       {

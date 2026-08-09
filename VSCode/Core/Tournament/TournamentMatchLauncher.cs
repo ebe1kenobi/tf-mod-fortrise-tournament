@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Monocle;
 using TowerFall;
 
@@ -56,15 +56,22 @@ namespace TFModFortRiseTournament.Tournament
         if (alts != null && slot < alts.Length && alts[slot] >= 0)
           TFGame.AltSelect[input] = (ArcherData.ArcherTypes)alts[slot];
 
+        // Le tournoi ne passe pas par l'ecran de selection des archers : c'est la que
+        // Profiles rattache normalement un profil a un joueur. Sans ce rattachement,
+        // le nom s'affiche mais rien d'autre ne suit - ni couleurs, ni sons, ni
+        // portraits. Un nom qui ne designe aucun profil detache l'emplacement, pour
+        // que le joueur du match precedent n'y laisse pas les siens.
+        ProfilesImport.AssignProfile(input, playerName);
+
         // L'application du nom custom est optionnelle : elle peut planter selon les
         // autres mods actifs (ex: WiderSetMod modifie le Rollcall et fait planter le
-        // SetPlayerName du mod CustomName). On ne doit surtout pas empecher le match
+        // SetPlayerName du mod Profiles). On ne doit surtout pas empecher le match
         // de se lancer pour ca -> try/catch, on continue meme si le nom n'est pas pose.
-        if (CustomNameImport.SetPlayerName != null)
+        if (ProfilesImport.IsAvailable)
         {
           try
           {
-            CustomNameImport.SetPlayerName(input, playerName);
+            ProfilesImport.SetPlayerName(input, playerName);
           }
           catch (Exception exName)
           {
@@ -79,26 +86,40 @@ namespace TFModFortRiseTournament.Tournament
     }
 
     /// <summary>
-    /// Ramene le mode de jeu au dernier survivant.
+    /// Ramene le mode de jeu au dernier survivant, sans tournoi en cours.
     ///
     /// MainMenu.VersusMatchSettings est l'objet partage avec le versus normal : il
     /// conserve le dernier mode joue, y compris un mode ajoute par un mod (Playtag,
-    /// Bartizan...). Sans cette remise a zero, les matchs du tournoi se jouaient
-    /// dans ce mode-la.
-    ///
-    /// Remettre IsCustom a false suffit : RoundLogic.GetRoundLogic ne consulte
-    /// CustomVersusGameMode que s'il est vrai, et retombe sinon sur le switch
-    /// vanilla base sur Mode. C'est exactement ce que fait le bouton de mode du
-    /// menu, qui ne remet pas CustomVersusModeName a null non plus (son setter
-    /// n'est de toute facon pas accessible depuis un mod).
+    /// Bartizan...). Cette remise a zero sert de point de depart a l'ecran de
+    /// configuration ; des qu'un tournoi existe, c'est son propre mode qui prime
+    /// (voir ApplyTournamentRules).
     /// </summary>
     public static void ResetGameMode()
     {
-      var settings = MainMenu.VersusMatchSettings;
-      if (settings == null) return;
+      TournamentGameModes.Apply(TournamentGameModes.Default);
+    }
 
-      settings.IsCustom = false;
-      settings.Mode = Modes.LastManStanding;
+    /// <summary>
+    /// Applique le mode et les variantes retenus pour ce tournoi.
+    ///
+    /// Rejoue avant chaque match, et pas seulement au demarrage : quitter le tournoi
+    /// pour un versus dans un autre mode, ou avec d'autres variantes, puis reprendre
+    /// le tournoi ne doit rien changer a ses regles.
+    /// </summary>
+    public static void ApplyTournamentRules(TournamentSession session)
+    {
+      if (session == null || session.Data == null)
+      {
+        ResetGameMode();
+        return;
+      }
+
+      TournamentGameModes.Apply(session.Data.GameMode);
+
+      // Null = tournoi cree avant l'ecran des variantes : on laisse celles en place
+      // plutot que de tout desactiver dans le dos de l'utilisateur.
+      if (session.Data.ActiveVariants != null)
+        TournamentVariants.ApplyActiveIds(session.Data.ActiveVariants);
     }
 
     /// <summary>
@@ -118,8 +139,8 @@ namespace TFModFortRiseTournament.Tournament
       }
 
       // Rejoue a chaque match : quitter un tournoi pour un versus dans un autre
-      // mode puis reprendre le tournoi ne doit pas ramener ce mode.
-      ResetGameMode();
+      // mode ou d'autres variantes puis reprendre le tournoi ne doit rien changer.
+      ApplyTournamentRules(session);
 
       int roundsToWin = session.Data.RoundsToWin;
       if (roundsToWin < 1)

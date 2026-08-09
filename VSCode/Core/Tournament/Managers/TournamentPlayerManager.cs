@@ -21,6 +21,12 @@ namespace TFModFortRiseTournament.Tournament
     private class PlayerListData
     {
       public List<string> players { get; set; }
+
+      /// <summary>
+      /// Source du roster : "JSON" ou "PROFILES". Absente des fichiers ecrits par les
+      /// versions anterieures, ce qui vaut "JSON" - le comportement qu'ils avaient.
+      /// </summary>
+      public string source { get; set; }
     }
 
     /// <summary>
@@ -60,8 +66,7 @@ namespace TFModFortRiseTournament.Tournament
           CreateDefaultFile();
         }
 
-        string jsonContent = File.ReadAllText(JsonPath);
-        var data = JsonSerializer.Deserialize<PlayerListData>(jsonContent);
+        var data = ReadData();
 
         if (data?.players == null || data.players.Count == 0)
         {
@@ -118,9 +123,53 @@ namespace TFModFortRiseTournament.Tournament
     }
 
     /// <summary>
-    /// Réécrit le fichier des joueurs.
+    /// Réécrit le fichier des joueurs, en conservant la source choisie : elle vit
+    /// dans le même fichier et une réécriture de la liste ne doit pas l'effacer.
     /// </summary>
     public static bool SavePlayerNames(List<string> names)
+    {
+      var data = ReadData() ?? new PlayerListData();
+      data.players = names;
+      return WriteData(data);
+    }
+
+    /// <summary>
+    /// Source du roster enregistrée. "JSON" par défaut : c'est ce que faisaient les
+    /// versions sans ce réglage, et un fichier de noms déjà rempli doit continuer de
+    /// servir sans que rien n'ait à être reconfiguré.
+    /// </summary>
+    public static string LoadSource()
+    {
+      var data = ReadData();
+      return string.IsNullOrWhiteSpace(data?.source)
+          ? TournamentRoster.SourceJson
+          : data.source.Trim().ToUpper();
+    }
+
+    public static bool SaveSource(string source)
+    {
+      var data = ReadData() ?? new PlayerListData();
+      data.source = source;
+      return WriteData(data);
+    }
+
+    private static PlayerListData ReadData()
+    {
+      try
+      {
+        if (!File.Exists(JsonPath))
+          return null;
+
+        return JsonSerializer.Deserialize<PlayerListData>(File.ReadAllText(JsonPath));
+      }
+      catch (Exception ex)
+      {
+        Logger.Info($"Error reading tournament players file: {ex.Message}");
+        return null;
+      }
+    }
+
+    private static bool WriteData(PlayerListData data)
     {
       try
       {
@@ -129,7 +178,7 @@ namespace TFModFortRiseTournament.Tournament
           Directory.CreateDirectory(directory);
 
         string jsonContent = JsonSerializer.Serialize(
-            new PlayerListData { players = names },
+            data,
             new JsonSerializerOptions { WriteIndented = true });
 
         File.WriteAllText(JsonPath, jsonContent);
@@ -137,7 +186,7 @@ namespace TFModFortRiseTournament.Tournament
       }
       catch (Exception ex)
       {
-        Logger.Info($"Error saving player names: {ex.Message}");
+        Logger.Info($"Error saving tournament players file: {ex.Message}");
         return false;
       }
     }

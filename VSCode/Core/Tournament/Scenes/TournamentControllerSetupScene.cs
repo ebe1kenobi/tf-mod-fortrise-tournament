@@ -34,6 +34,14 @@ namespace TFModFortRiseTournament.Tournament
       public bool Ready;
       public ArcherPortrait Portrait;
       public Vector2 Position;
+
+      /// <summary>
+      /// Vrai quand ce nom est un profil : son archer est celui du profil et ne se
+      /// change pas ici. Les couleurs d'un profil sont faites pour un archer et une
+      /// tenue precis - en changer donnerait un archer aux couleurs d'origine, c'est-a
+      /// -dire un joueur qui perd son apparence sans comprendre pourquoi.
+      /// </summary>
+      public bool ArcherLocked;
     }
 
     private readonly TournamentSession session;
@@ -101,16 +109,36 @@ namespace TFModFortRiseTournament.Tournament
     }
 
     /// <summary>
-    /// Reprend l'archer memorise pour ce joueur ; a defaut, le premier archer
-    /// disponible, pour ne jamais partir sur un archer deja pris par un voisin.
+    /// Fixe l'archer de la place : celui du profil s'il y en a un, sinon celui
+    /// memorise au match precedent, et en dernier ressort le premier archer libre,
+    /// pour ne jamais partir sur un archer deja pris par un voisin.
+    ///
+    /// Le profil passe avant le choix memorise, et verrouille la place. Les couleurs
+    /// d'un profil sont enregistrees pour un archer et une tenue precis : en changer
+    /// ne donnerait pas un archer recolore differemment, mais un archer sans couleurs
+    /// du tout. Ce n'est pas un choix qu'on gagne a laisser ouvert.
+    ///
+    /// Sans egard pour ce qu'ont pris les voisins : deux profils ont le droit d'aimer
+    /// le meme archer, et chacun a ses propres couleurs.
     /// </summary>
     private void RestoreArcher(Slot slot, int index)
     {
+      int fromProfile = ProfilesImport.GetProfileArcher(slot.Name);
+      if (fromProfile >= 0 && IsArcherSelectable(fromProfile))
+      {
+        slot.CharacterIndex = fromProfile;
+        slot.AltSelect = ProfilesImport.IsProfileAlt(slot.Name)
+            ? ArcherData.ArcherTypes.Alt
+            : ArcherData.ArcherTypes.Normal;
+        slot.ArcherLocked = true;
+        return;
+      }
+
       TournamentArcherChoice choice = null;
       if (session != null && session.Data != null && session.Data.ArcherChoices != null)
         session.Data.ArcherChoices.TryGetValue(slot.Name, out choice);
 
-      if (choice != null && IsArcherSelectable(choice.CharacterIndex, null))
+      if (choice != null && IsArcherSelectable(choice.CharacterIndex))
       {
         slot.CharacterIndex = choice.CharacterIndex;
         slot.AltSelect = (ArcherData.ArcherTypes)choice.AltSelect;
@@ -124,23 +152,45 @@ namespace TFModFortRiseTournament.Tournament
     {
       for (int c = 0; c < ArcherData.Amount; c++)
       {
-        if (IsArcherSelectable(c, null))
+        if (IsArcherFree(c, null))
           return c;
       }
+
+      // Plus un seul archer libre : on retombe sur le rang de la place. Partager un
+      // archer est permis, c'est donc une issue et non plus une impasse.
       return fallback % Math.Max(1, ArcherData.Amount);
     }
 
     /// <summary>
-    /// Un archer est selectionnable s'il est debloque et qu'aucune AUTRE place ne
-    /// l'a deja pris. On ne s'appuie pas sur TFGame.CharacterTaken : les joueurs
-    /// du match ne sont pas encore actifs a ce stade.
+    /// Un archer est choisissable des lors qu'il est debloque : deux places ont le
+    /// droit de prendre le meme.
+    ///
+    /// Le jeu l'interdit d'ordinaire pour que deux personnages identiques ne soient
+    /// pas confondus. Le mod Profiles recolore les archers, ce qui leve cette raison,
+    /// et il desactive deja la restriction ailleurs : la maintenir ici aurait fait de
+    /// cet ecran le seul endroit ou un joueur ne peut pas jouer son propre archer.
+    ///
+    /// Deux archers identiques et non recolores restent indiscernables - c'est au
+    /// joueur d'en decider.
     /// </summary>
-    private bool IsArcherSelectable(int characterIndex, Slot forSlot)
+    private bool IsArcherSelectable(int characterIndex)
     {
-      if (characterIndex < 0 || characterIndex >= ArcherData.Amount)
-        return false;
+      return characterIndex >= 0
+          && characterIndex < ArcherData.Amount
+          && SaveData.Instance.Unlocks.GetArcherUnlocked(characterIndex);
+    }
 
-      if (!SaveData.Instance.Unlocks.GetArcherUnlocked(characterIndex))
+    /// <summary>
+    /// Archer debloque qu'aucune AUTRE place n'a pris. Ne sert plus qu'a choisir un
+    /// archer par defaut : partager un archer est desormais permis, mais y placer
+    /// deux joueurs d'office serait un mauvais point de depart.
+    ///
+    /// On ne s'appuie pas sur TFGame.CharacterTaken : les joueurs du match ne sont pas
+    /// encore actifs a ce stade.
+    /// </summary>
+    private bool IsArcherFree(int characterIndex, Slot forSlot)
+    {
+      if (!IsArcherSelectable(characterIndex))
         return false;
 
       foreach (Slot other in slots)
@@ -301,10 +351,16 @@ namespace TFModFortRiseTournament.Tournament
 
     private void ChangeArcher(Slot slot, int dir)
     {
+      if (slot.ArcherLocked)
+      {
+        Sounds.ui_invalid.Play(slot.Position.X, 1f);
+        return;
+      }
+
       for (int step = 1; step <= ArcherData.Amount; step++)
       {
         int candidate = ((slot.CharacterIndex + dir * step) % ArcherData.Amount + ArcherData.Amount) % ArcherData.Amount;
-        if (!IsArcherSelectable(candidate, slot)) continue;
+        if (!IsArcherSelectable(candidate)) continue;
 
         slot.CharacterIndex = candidate;
         slot.Portrait.SetCharacter(slot.CharacterIndex, slot.AltSelect, dir);
@@ -315,6 +371,14 @@ namespace TFModFortRiseTournament.Tournament
 
     private void ToggleAlt(Slot slot)
     {
+      // La tenue est verrouillee avec l'archer : les couleurs d'un profil sont
+      // enregistrees pour le couple, pas pour le seul personnage.
+      if (slot.ArcherLocked)
+      {
+        Sounds.ui_invalid.Play(slot.Position.X, 1f);
+        return;
+      }
+
       slot.AltSelect = slot.AltSelect == ArcherData.ArcherTypes.Alt
           ? ArcherData.ArcherTypes.Normal
           : ArcherData.ArcherTypes.Alt;
@@ -474,8 +538,17 @@ namespace TFModFortRiseTournament.Tournament
           slot.Position + new Vector2(0f, 68f), nameColor);
 
       if (slot.Ready)
+      {
         Draw.OutlineTextCentered(TFGame.Font, "READY",
             slot.Position + new Vector2(0f, 40f), Calc.HexToColor("5EFF5E"), 1f);
+        return;
+      }
+
+      // Une place verrouillee doit dire pourquoi elle ne repond pas aux fleches :
+      // sans ce mot, l'archer fige passerait pour une manette qui ne marche pas.
+      if (slot.ArcherLocked)
+        Draw.TextCentered(TFGame.Font, "PROFILE",
+            slot.Position + new Vector2(0f, 40f), Calc.HexToColor("FFEC5E"));
     }
 
     /// <summary>Curseur des manettes qui n'ont pas encore de place.</summary>
@@ -504,10 +577,24 @@ namespace TFModFortRiseTournament.Tournament
       string hint;
       if (!AnyAssigned())
         hint = "LEFT/RIGHT: SLOT   A: TAKE   B: BACK";
-      else
+      else if (AnyArcherChangeable())
         hint = "LEFT/RIGHT: ARCHER   A: READY   B: CANCEL";
+      else
+        // Personne ne peut changer d'archer : annoncer la touche serait la promesse
+        // d'une action qui ne repond pas.
+        hint = "A: READY   B: CANCEL";
 
       Draw.TextCentered(TFGame.Font, hint, new Vector2(160f, 224f), Color.Gray * 0.8f);
+    }
+
+    /// <summary>Au moins une place installee peut encore changer d'archer.</summary>
+    private bool AnyArcherChangeable()
+    {
+      foreach (Slot slot in slots)
+      {
+        if (slot.InputIndex >= 0 && !slot.Ready && !slot.ArcherLocked) return true;
+      }
+      return false;
     }
 
     private bool AnyAssigned()

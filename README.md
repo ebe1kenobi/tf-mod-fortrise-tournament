@@ -9,7 +9,8 @@ A mod for **FortRise 5** (>= 5.3.3). The FortRise 4 version (`tf-mod-fortrise-to
 ## Installation
 
 1. Install FortRise 5 and start the game through `FortRise.exe`.
-2. Install the mods this one depends on first: **CustomName**.
+2. No other mod is required. **Profiles** is optional - see
+   [Where the names come from](#where-the-names-come-from).
 3. Copy `release/tournament` (or the shipped folder) into `<TowerFall>/FortRise/Mods/`.
 
 Settings are under **Options > Mods > Tournament**.
@@ -21,15 +22,16 @@ A **TOURNAMENT** button shows up on the main menu, between VERSUS and CO-OP.
 
 ### 1. The roster
 
-The selection screen lists the known players, read from
-`<TowerFall>/FortRise/Saves/Tournament/tournament_players.json`.
+The selection screen lists the known players. The left column is named after where
+those names come from.
 
 | Input | Effect |
 |-------|--------|
 | Up / Down | move through the list |
 | A | add the player to the tournament |
 | B | remove the last one added, or leave when the list is empty |
-| **Y** | **create a new player** (virtual keyboard) |
+| **Y** | **create a new player** (virtual keyboard, `JSON` source only) |
+| **Left / Right** | **switch source** (only when Profiles is installed) |
 | Start | confirm and move on to the settings |
 
 The virtual keyboard accepts physical typing - keyboard layout honoured, AZERTY
@@ -40,10 +42,81 @@ Start to confirm, B or Escape to cancel). A new name is appended to
 The screen stays reachable even when the file is missing or too short: it is the
 only way to fill it from inside the game.
 
+#### Where the names come from
+
+Two sources, and the choice is yours:
+
+| Source | Names | Adding a name |
+|--------|-------|---------------|
+| `JSON` | `<TowerFall>/FortRise/Saves/Tournament/tournament_players.json` | Y, on the spot |
+| `PROFILES` | the profiles of the **Ebe1.Profiles** mod | in the Profiles menu |
+
+**Profiles is optional.** Without it the tournament behaves exactly as it always
+has, on its own file; left/right do nothing and no source is offered, because there
+would be only one.
+
+The choice is remembered in `tournament_players.json`, next to the names. A roster
+already filled in keeps working untouched: `JSON` stays the default.
+
+Switching sources **keeps the players already picked** - a tournament is made of
+names, wherever they come from, so a grid can draw from both.
+
+On the `PROFILES` source, a player brings their whole profile into the match: colours,
+sounds, portraits and key mapping. The profile is attached when the match starts, so
+nothing has to be picked again on a screen the tournament never shows.
+
+Their favourite archer is **offered** on the controller screen, not imposed - and it
+matters more than a preference: a profile's colours are stored for one archer and one
+costume, and do not apply to another character. Change archer there and you play that
+archer, in its own colours.
+
+A name that matches no profile detaches the slot, so the previous match's player does
+not leave their colours behind.
+
+Profiles publishes its roster from **1.16.0** on. An older Profiles still supplies
+in-game player names; only the source choice is unavailable, and the screen says so
+by showing `JSON (NO PROFILES)`.
+
 ### 2. Tournament settings
 
-Match format (FFA with 2, 3 or 4), tournament type, rounds needed to win a match,
-and map choice (manual, random or fixed tower).
+Six options, navigated with up/down and adjusted with left/right:
+
+| Option | Purpose |
+|--------|---------|
+| TOURNAMENT MODE | single elimination, round-robin or king of the hill |
+| FFA FORMAT | players per match (2, 3 or 4) |
+| ROUNDS TO WIN | rounds needed to win a match |
+| MAP | manual pick, random, or a fixed tower |
+| GAME MODE | same list as the versus mode button: Last Man Standing, Head Hunters, Team Deathmatch, then every mode added by a mod (Respawn, PlayTag, Speed Run...) |
+| VARIANTS | shows how many are active; **A** opens the variants screen |
+
+**Start** confirms and draws the bracket.
+
+#### Variants screen
+
+Opened with **A** on the VARIANTS line. Icons are laid out in a grid grouped by
+header, exactly like the versus variants screen, and the name of the highlighted
+one is shown underneath.
+
+| Input | Effect |
+|-------|--------|
+| Up / Down | move between rows, skipping headers |
+| Left / Right | move along a row, wrapping onto the next one |
+| A | toggle the highlighted variant |
+| B | back to the settings |
+
+A coloured icon with a green frame means the variant is on, a greyed one means off.
+The first line, `RESET ALL VARIANTS`, turns everything off at once.
+
+Starting a new tournament pre-selects the game's **tournament rules** preset, the
+usual starting point for a competition. Resuming a saved tournament keeps its own
+variants instead.
+
+#### Rules are pinned to the tournament
+
+The chosen game mode and variants are stored with the tournament and re-applied
+before **every** match. Leaving the tournament to play a versus in another mode, or
+with other variants, does not change the rules of the tournament in progress.
 
 ### 3. The bracket
 
@@ -68,14 +141,37 @@ This screen is what removes the controller passing between matches: the name fol
 the controller, not the other way round. The controller icon and its number are
 drawn under each slot. The chosen archer is remembered and offered again next match.
 
-The game mode is reset to **last man standing** when entering the tournament and
-before each match, so a previously played mode does not carry over.
+**Two players may take the same archer.** The default still spreads them out - being
+put on a duplicate without asking would be a poor start - but nothing stops anyone
+from cycling onto an archer a neighbour already holds. Recoloured profiles tell them
+apart; two identical archers with no recolouring stay indistinguishable, and that is
+the player's call.
+
+**A slot holding a profile has its archer locked**, marked `PROFILE` under the
+portrait. Left/right and the costume toggle refuse it. A profile's colours are stored
+for one archer and one costume: changing them would not give a differently coloured
+archer, it would give an archer with no colours at all. Their profile archer wins over
+any archer remembered from an earlier match.
+
+The game mode and variants chosen in the settings are re-applied here, so a versus
+played in between does not carry over into the tournament.
 
 ## Data
 
 `<TowerFall>/FortRise/Saves/Tournament/` holds the roster
 (`tournament_players.json`) and the tournament in progress, picked up again on the
 next launch.
+
+`tournament_players.json` carries both the names and the chosen source:
+
+```json
+{
+  "players": [ "ERIC", "LEO" ],
+  "source": "JSON"
+}
+```
+
+A file without `source` - every file written before 1.1.0 - reads as `JSON`.
 
 ## Build / deployment
 
