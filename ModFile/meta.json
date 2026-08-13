@@ -1,19 +1,19 @@
 {
-	"name": "Tournament",
-	"version": "1.4.0",
-	"author": "ebe1.kenobi",
-	"description": "Tournament",
-	"dll": "TFModFortRiseTournament.dll",
-	"dependencies": [
-		{
-			"name": "FortRise",
-			"version": "5.3.3"
-		}
-	],
-	"optionalDependencies": [
-		{
-			"name": "Archer",
-			"version": "1.0.0"
-		}
-	]
+  "name": "Tournament",
+  "version": "1.1.0",
+  "author": "ebe1.kenobi",
+  "description": "Tournament",
+  "dll": "TFModFortRiseTournament.dll",
+  "dependencies": [
+    {
+      "name": "FortRise",
+      "version": "5.3.3"
+    }
+  ],
+  "optionalDependencies": [
+    {
+      "name": "Archer",
+      "version": "1.1.0"
+    }
+  ]
 }

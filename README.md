@@ -9,9 +9,9 @@ A mod for **FortRise 5** (>= 5.3.3). The FortRise 4 version (`tf-mod-fortrise-to
 ## Installation
 
 1. Install FortRise 5 and start the game through `FortRise.exe`.
-2. No other mod is required. **Profiles** is optional - see
+2. No other mod is required. **Archer** is optional - see
    [Where the names come from](#where-the-names-come-from).
-3. Copy `release/tournament` (or the shipped folder) into `<TowerFall>/FortRise/Mods/`.
+3. Copy `release/tf-mod-fortrise-tournament` into `<TowerFall>/FortRise/Mods/`.
 
 Settings are under **Options > Mods > Tournament**.
 Data and log files live in `<TowerFall>/FortRise/Saves/Tournament/` and `<TowerFall>/FortRise/Logs/`.
@@ -31,7 +31,7 @@ those names come from.
 | A | add the player to the tournament |
 | B | remove the last one added, or leave when the list is empty |
 | **Y** | **create a new player** (virtual keyboard, `JSON` source only) |
-| **Left / Right** | **switch source** (only when Profiles is installed) |
+| **Left / Right** | **switch source** (only when Archer is installed) |
 | Start | confirm and move on to the settings |
 
 The virtual keyboard accepts physical typing - keyboard layout honoured, AZERTY
@@ -49,11 +49,16 @@ Two sources, and the choice is yours:
 | Source | Names | Adding a name |
 |--------|-------|---------------|
 | `JSON` | `<TowerFall>/FortRise/Saves/Tournament/tournament_players.json` | Y, on the spot |
-| `PROFILES` | the profiles of the **Ebe1.Profiles** mod | in the Profiles menu |
+| `PROFILES` | the profiles of the **Archer** mod | in the Archer menu |
 
-**Profiles is optional.** Without it the tournament behaves exactly as it always
-has, on its own file; left/right do nothing and no source is offered, because there
-would be only one.
+> The mod that holds the profiles used to be called **Profiles**. It is **Archer**
+> now - the name, the folder and the API key alike. Anywhere this page says `PROFILES`
+> in capitals it means the *source*, which kept its name because it is a list of
+> profiles; the *mod* that publishes it is Archer.
+
+**Archer is optional.** Without it the tournament behaves exactly as it always has, on
+its own file; left/right do nothing and no source is offered, because there would be
+only one.
 
 The choice is remembered in `tournament_players.json`, next to the names. A roster
 already filled in keeps working untouched: `JSON` stays the default.
@@ -73,9 +78,18 @@ archer, in its own colours.
 A name that matches no profile detaches the slot, so the previous match's player does
 not leave their colours behind.
 
-Profiles publishes its roster from **1.16.0** on. An older Profiles still supplies
-in-game player names; only the source choice is unavailable, and the screen says so
-by showing `JSON (NO PROFILES)`.
+The roster is asked for as an interface of its own, and that is what makes it safe: an
+Archer that does not publish it simply answers nothing, without costing the in-game
+player names, which have always worked.
+
+**No minimum version is required** any more. There was one - 1.16, the version the
+roster appeared in - and it turned into a trap the day every mod in the repository
+restarted from a common number: 1.1.0 is *lower* than 1.16.0, so the `PROFILES` source
+vanished from the selection screen while the interface was in fact right there. The
+shape of the members is a sounder test than the number, and it is the one the interop
+already makes.
+
+When no roster is published, the screen says so by showing `JSON (NO PROFILES)`.
 
 ### 2. Tournament settings
 

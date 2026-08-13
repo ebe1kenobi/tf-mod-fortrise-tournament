@@ -118,15 +118,21 @@ namespace TFModFortRiseTournament
       if (ProfilesImport.Api == null)
         TFModFortRiseTournament.Logger.Info("[Profiles] mod absent : repli sur les noms P1..P8");
 
-      // Le roster est demande a part, avec une version minimale : Profiles ne le
-      // publie que depuis la 1.16, et reclamer un membre absent ferait echouer le
-      // proxy - donc perdre aussi les noms de joueurs, qui eux marchent depuis
-      // toujours.
-      ProfilesImport.Roster = context.Interop.GetApi<IProfilesRosterApi>(
-          "Archer", new SemanticVersion(1, 16, 0));
+      // Le roster est demande A PART, et c'est ce qui protege : l'interop batit son
+      // proxy sur la forme des membres, donc un Archer qui ne publierait pas cette
+      // interface rend simplement null, sans faire perdre les noms de joueurs qui eux
+      // marchent depuis toujours.
+      //
+      // SANS version minimale. Il y en avait une - 1.16, la version ou le roster est
+      // apparu - et elle est devenue un piege le jour ou tous les mods du depot sont
+      // repartis d'un numero commun : 1.1.0 est inferieur a 1.16.0, la source PROFILES
+      // disparaissait donc de l'ecran de selection alors que l'interface etait bien la.
+      // La forme des membres est un test plus sur que le numero, et c'est deja celui
+      // que fait l'interop.
+      ProfilesImport.Roster = context.Interop.GetApi<IProfilesRosterApi>("Archer");
       if (ProfilesImport.Api != null && ProfilesImport.Roster == null)
         TFModFortRiseTournament.Logger.Info(
-            "[Profiles] version anterieure a 1.16 : roster limite au fichier JSON");
+            "[Archer] pas de roster publie : liste limitee au fichier JSON");
 
       foreach (var hookable in Hookables)
       {
