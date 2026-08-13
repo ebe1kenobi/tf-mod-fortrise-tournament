@@ -1,4 +1,4 @@
-﻿//todo ajout tournament variant, desactivate variant orb ...
+//todo ajout tournament variant, desactivate variant orb ...
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -104,7 +104,7 @@ namespace TFModFortRiseTournament
       }
       Instance = this;
 
-      TFModFortRiseTournament.Logger.Init(Meta.Name);
+      TFModFortRiseTournament.Logger.Init(logger);
 
       RegisterTextures(content, context);
 
@@ -114,7 +114,7 @@ namespace TFModFortRiseTournament
       //
       // L'interop de FortRise construit son proxy sur la forme des membres : il suffit
       // que IProfilesModApi decrive ce que Profiles expose.
-      ProfilesImport.Api = context.Interop.GetApi<IProfilesModApi>("Ebe1.Profiles");
+      ProfilesImport.Api = context.Interop.GetApi<IProfilesModApi>("Archer");
       if (ProfilesImport.Api == null)
         TFModFortRiseTournament.Logger.Info("[Profiles] mod absent : repli sur les noms P1..P8");
 
@@ -123,7 +123,7 @@ namespace TFModFortRiseTournament
       // proxy - donc perdre aussi les noms de joueurs, qui eux marchent depuis
       // toujours.
       ProfilesImport.Roster = context.Interop.GetApi<IProfilesRosterApi>(
-          "Ebe1.Profiles", new SemanticVersion(1, 16, 0));
+          "Archer", new SemanticVersion(1, 16, 0));
       if (ProfilesImport.Api != null && ProfilesImport.Roster == null)
         TFModFortRiseTournament.Logger.Info(
             "[Profiles] version anterieure a 1.16 : roster limite au fichier JSON");

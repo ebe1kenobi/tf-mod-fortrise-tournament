@@ -177,10 +177,22 @@ namespace TFModFortRiseTournament.Tournament
     /// actif (voir SetValue). Depuis un ecran de configuration, la moitie du
     /// preregage serait donc perdue.
     /// </summary>
+    /// <summary>
+    /// Le point de depart d'un nouveau tournoi : aucune variante, sauf NO AUTOBALANCE.
+    ///
+    /// Ce n'etait pas le cas : on posait les REGLES DE TOURNOI du jeu, soit
+    /// l'ensemble des variantes marquees TournamentRules - NO AUTOBALANCE, mais aussi
+    /// SYMMETRICAL TREASURE. La seconde arrivait cochee sans que personne l'ait
+    /// demandee, et se retrouvait dans toutes les parties du tournoi.
+    ///
+    /// Ne reste que celle qui a une raison d'etre imposee : sans elle, le jeu donne
+    /// des fleches et des boucliers a celui qui perd, ce qui n'a pas sa place dans une
+    /// competition. Le reste est un choix, et un choix se coche.
+    /// </summary>
     public static void ApplyTournamentRules()
     {
       foreach (Entry entry in GetEntries())
-        SetValue(entry.Variant, entry.Variant.TournamentRules);
+        SetValue(entry.Variant, ReferenceEquals(entry.Variant, Current?.NoAutobalance));
     }
 
     /// <summary>Variantes du match versus, partagees avec le reste du jeu.</summary>

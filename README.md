@@ -108,9 +108,15 @@ one is shown underneath.
 A coloured icon with a green frame means the variant is on, a greyed one means off.
 The first line, `RESET ALL VARIANTS`, turns everything off at once.
 
-Starting a new tournament pre-selects the game's **tournament rules** preset, the
-usual starting point for a competition. Resuming a saved tournament keeps its own
-variants instead.
+Starting a new tournament pre-selects **NO AUTOBALANCE**, and nothing else.
+
+It used to pre-select the game's whole *tournament rules* preset, which also brings
+`SYMMETRICAL TREASURE` along - a variant nobody had asked for, that then applied to
+every match of the tournament. Only the one with a reason to be imposed is left:
+without it the game hands arrows and shields to whoever is losing, which has no
+place in a competition. The rest is a choice, and a choice gets ticked.
+
+Resuming a saved tournament keeps its own variants instead.
 
 #### Rules are pinned to the tournament
 

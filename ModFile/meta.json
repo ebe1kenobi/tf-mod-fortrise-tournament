@@ -1,4 +1,4 @@
-﻿{
+{
 	"name": "Tournament",
 	"version": "1.4.0",
 	"author": "ebe1.kenobi",
@@ -12,7 +12,7 @@
 	],
 	"optionalDependencies": [
 		{
-			"name": "Ebe1.Profiles",
+			"name": "Archer",
 			"version": "1.0.0"
 		}
 	]
