@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using FortRise;
 using System.Collections.Generic;
 
 namespace TFModFortRiseTournament
@@ -14,8 +15,78 @@ namespace TFModFortRiseTournament
   /// </summary>
   public static class ProfilesImport
   {
-    internal static IProfilesModApi Api;
-    internal static IProfilesRosterApi Roster;
+    private static IModInterop interop;
+    private static IProfilesModApi api;
+    private static IProfilesRosterApi roster;
+
+    /// <summary>
+    /// Retient de quoi interroger les autres mods, sans rien demander tout de suite.
+    ///
+    /// On ne PEUT PAS resoudre dans le constructeur du module : ModuleManager n'inscrit
+    /// un mod dans son annuaire qu'APRES avoir execute son constructeur. Au moment ou
+    /// celui du tournoi tourne, Archer n'est donc pas joignable si l'ordre de
+    /// chargement le place apres - et c'est ce qui arrivait : le journal disait
+    /// "mod absent", la source PROFILES disparaissait de l'ecran, et Archer etait
+    /// pourtant bien la.
+    /// </summary>
+    public static void Bind(IModInterop modInterop)
+    {
+      interop = modInterop;
+    }
+
+    /// <summary>
+    /// Resolue au PREMIER BESOIN, c'est-a-dire a l'ouverture de l'ecran de selection,
+    /// longtemps apres que tous les mods sont charges. Mise en cache seulement en cas
+    /// de succes : un echec ne coute qu'une recherche dans un dictionnaire et ne doit
+    /// pas condamner les suivants.
+    /// </summary>
+    internal static IProfilesModApi Api
+    {
+      get
+      {
+        if (api != null || interop == null)
+        {
+          return api;
+        }
+
+        try
+        {
+          api = interop.GetApi<IProfilesModApi>("Archer");
+        }
+        catch (Exception)
+        {
+          // Mod absent, ou installe sans exposer cette interface.
+        }
+
+        return api;
+      }
+    }
+
+    /// <summary>
+    /// Le roster, demande A PART : l'interop batit son proxy sur la forme des membres,
+    /// donc un Archer qui ne le publierait pas rend simplement null, sans faire perdre
+    /// les noms de joueurs.
+    /// </summary>
+    internal static IProfilesRosterApi Roster
+    {
+      get
+      {
+        if (roster != null || interop == null)
+        {
+          return roster;
+        }
+
+        try
+        {
+          roster = interop.GetApi<IProfilesRosterApi>("Archer");
+        }
+        catch (Exception)
+        {
+        }
+
+        return roster;
+      }
+    }
 
     public static bool IsAvailable => Api != null;
 

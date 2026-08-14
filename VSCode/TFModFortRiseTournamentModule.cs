@@ -108,31 +108,10 @@ namespace TFModFortRiseTournament
 
       RegisterTextures(content, context);
 
-      // Profiles est une dependance optionnelle : le tournoi tourne sans lui, sur son
-      // fichier de noms. Present, il fournit les noms de joueurs affiches en jeu, et
-      // sa liste de profils devient une source de roster au choix.
-      //
-      // L'interop de FortRise construit son proxy sur la forme des membres : il suffit
-      // que IProfilesModApi decrive ce que Profiles expose.
-      ProfilesImport.Api = context.Interop.GetApi<IProfilesModApi>("Archer");
-      if (ProfilesImport.Api == null)
-        TFModFortRiseTournament.Logger.Info("[Profiles] mod absent : repli sur les noms P1..P8");
-
-      // Le roster est demande A PART, et c'est ce qui protege : l'interop batit son
-      // proxy sur la forme des membres, donc un Archer qui ne publierait pas cette
-      // interface rend simplement null, sans faire perdre les noms de joueurs qui eux
-      // marchent depuis toujours.
-      //
-      // SANS version minimale. Il y en avait une - 1.16, la version ou le roster est
-      // apparu - et elle est devenue un piege le jour ou tous les mods du depot sont
-      // repartis d'un numero commun : 1.1.0 est inferieur a 1.16.0, la source PROFILES
-      // disparaissait donc de l'ecran de selection alors que l'interface etait bien la.
-      // La forme des membres est un test plus sur que le numero, et c'est deja celui
-      // que fait l'interop.
-      ProfilesImport.Roster = context.Interop.GetApi<IProfilesRosterApi>("Archer");
-      if (ProfilesImport.Api != null && ProfilesImport.Roster == null)
-        TFModFortRiseTournament.Logger.Info(
-            "[Archer] pas de roster publie : liste limitee au fichier JSON");
+      // On retient l'interop SANS interroger : ModuleManager n'inscrit un mod dans son
+      // annuaire qu'apres avoir execute son constructeur, donc Archer peut ne pas
+      // encore etre joignable ici. La resolution se fait au premier besoin.
+      ProfilesImport.Bind(context.Interop);
 
       foreach (var hookable in Hookables)
       {

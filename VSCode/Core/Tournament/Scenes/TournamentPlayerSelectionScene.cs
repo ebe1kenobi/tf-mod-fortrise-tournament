@@ -132,10 +132,28 @@ namespace TFModFortRiseTournament.Tournament
         return;
       }
 
+      // Retirer le joueur SUR LEQUEL ON EST, et non le dernier ajoute.
+      //
+      // Le curseur designe quelqu'un : c'est lui qu'on croit enlever en appuyant sur
+      // retour. Enlever le dernier de la liste obligeait a defaire tout ce qui avait
+      // ete ajoute apres, pour corriger une seule erreur au milieu.
+      //
+      // Le repli sur le dernier reste pour le cas ou le curseur pointe quelqu'un qui
+      // n'est pas dans la liste : retour doit toujours defaire quelque chose, sinon la
+      // touche parait morte alors que la liste n'est pas vide.
       if (MenuInput.Back && selectedPlayers.Count > 0)
       {
-        string removedPlayer = selectedPlayers[selectedPlayers.Count - 1];
-        selectedPlayers.RemoveAt(selectedPlayers.Count - 1);
+        string underCursor = availablePlayers.Count > 0 ? availablePlayers[selectedIndex] : null;
+
+        int at = underCursor != null ? selectedPlayers.IndexOf(underCursor) : -1;
+
+        if (at < 0)
+        {
+          at = selectedPlayers.Count - 1;
+        }
+
+        string removedPlayer = selectedPlayers[at];
+        selectedPlayers.RemoveAt(at);
         Sounds.ui_click.Play(160f, 1f);
         Logger.Info($"Removed player: {removedPlayer} (Total: {selectedPlayers.Count})");
         return;

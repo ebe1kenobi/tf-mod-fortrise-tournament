@@ -193,6 +193,23 @@ next launch.
 
 A file without `source` - every file written before 1.1.0 - reads as `JSON`.
 
+## Two things that used to go wrong
+
+**Removing a player** took the last one added, not the one under the cursor. Correcting a
+single mistake in the middle of the list meant undoing everything added after it. `BACK`
+now removes whoever the cursor is on, falling back to the last one when the cursor points
+at somebody who is not in the list - the key must always undo something, or it looks dead
+while the list is not empty.
+
+**The Archer roster was invisible.** The API was resolved **in the module's
+constructor**, and `ModuleManager` only registers a mod in its directory *after* running
+its constructor: if Archer loaded after the tournament, it simply was not there. The log
+said `[Profiles] mod absent` and the `PROFILES` source disappeared from the screen while
+Archer was installed and working.
+
+It is now **resolved on first use** - when the selection screen opens, long after every
+mod is loaded.
+
 ## Build / deployment
 
 | Script | Purpose |
