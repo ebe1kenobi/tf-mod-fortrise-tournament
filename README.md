@@ -20,7 +20,11 @@ Data and log files live in `<TowerFall>/FortRise/Saves/Tournament/` and `<TowerF
 
 A **TOURNAMENT** button shows up on the main menu, between VERSUS and CO-OP.
 
+<img width="934" height="630" alt="image" src="https://github.com/user-attachments/assets/37aec23e-6645-4929-8f9f-9643a646206b" />
+
 ### 1. The roster
+
+<img width="841" height="682" alt="image" src="https://github.com/user-attachments/assets/2936678c-296b-4cf1-9dd2-fdd3c606ac09" />
 
 The selection screen lists the known players. The left column is named after where
 those names come from.
@@ -93,6 +97,8 @@ When no roster is published, the screen says so by showing `JSON (NO PROFILES)`.
 
 ### 2. Tournament settings
 
+<img width="909" height="676" alt="image" src="https://github.com/user-attachments/assets/af171f54-0c22-4405-b68d-37dfd31343ea" />
+
 Six options, navigated with up/down and adjusted with left/right:
 
 | Option | Purpose |
@@ -139,6 +145,8 @@ before **every** match. Leaving the tournament to play a versus in another mode,
 with other variants, does not change the rules of the tournament in progress.
 
 ### 3. The bracket
+
+<img width="935" height="699" alt="image" src="https://github.com/user-attachments/assets/8b8a3adf-5721-485f-9b03-97dd3a179829" />
 
 The bracket shows the matches and their winners. Start launches the current match.
 
