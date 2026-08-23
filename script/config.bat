@@ -4,12 +4,13 @@ set TOWERFALL_DRIVE=C:
 set BUILD_NAME=TFModFortRiseTournament
 set DLL_MOD_FILE_NAME=TFModFortRiseTournament.dll
 set PDB_MOD_FILE_NAME=TFModFortRiseTournament.pdb
-set MODULE_DIR_NAME=tf-mod-fortrise-tournament
+set MODULE_DIR_NAME=Ebe1.Tournament
 
 set REPO_PATH=D:\__dev\code\tf-mod-fortrise-tournament\
+set REPO_SCRIPT_PATH=%REPO_PATH%script\
 set REPO_BUILD_PATH=%REPO_PATH%VSCode\bin\Debug\net10.0\
 set REPO_RELEASE_PATH=%REPO_PATH%release\
-set REPO_RELEASE_MOD_PATH=%REPO_RELEASE_PATH%\tf-mod-fortrise-tournament\
+set REPO_RELEASE_MOD_PATH=%REPO_RELEASE_PATH%%MODULE_DIR_NAME%\
 
 set TOWERFALL_PATH="C:\Program Files (x86)\Steam\steamapps\common\TowerFall\FortRise\"
 set TOWERFALL_MODS_PATH=%TOWERFALL_PATH%Mods\
