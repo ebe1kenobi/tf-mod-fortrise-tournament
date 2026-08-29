@@ -13,7 +13,11 @@ A mod for **FortRise 5** (>= 5.3.3). The FortRise 4 version (`tf-mod-fortrise-to
    [Where the names come from](#where-the-names-come-from).
 3. Copy `release/tf-mod-fortrise-tournament` into `<TowerFall>/FortRise/Mods/`.
 
-Settings are under **Options > Mods > Tournament**.
+**There is no Options > Mods entry.** Everything this mod can be told is told on its own
+screens, where the decision belongs: the roster on the selection screen, the format,
+mode, map and variants on the settings screen. A duplicate copy under Options would be a
+second place to look and a second place to disagree with the first.
+
 Data and log files live in `<TowerFall>/FortRise/Saves/Tournament/` and `<TowerFall>/FortRise/Logs/`.
 
 ## Usage
@@ -33,7 +37,7 @@ those names come from.
 |-------|--------|
 | Up / Down | move through the list |
 | A | add the player to the tournament |
-| B | remove the last one added, or leave when the list is empty |
+| B | remove the player **under the cursor**, or leave when the list is empty |
 | **Y** | **create a new player** (virtual keyboard, `JSON` source only) |
 | **Left / Right** | **switch source** (only when Archer is installed) |
 | Start | confirm and move on to the settings |
